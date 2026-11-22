@@ -1,0 +1,23 @@
+CREATE TABLE IF NOT EXISTS users (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  pseudo TEXT NOT NULL,
+  pseudo_key TEXT NOT NULL UNIQUE,
+  pass_hash TEXT NOT NULL,
+  salt TEXT NOT NULL,
+  created_at INTEGER NOT NULL
+);
+CREATE TABLE IF NOT EXISTS sessions (
+  token_hash TEXT PRIMARY KEY,
+  user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  expires_at INTEGER NOT NULL
+);
+CREATE TABLE IF NOT EXISTS clashes (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  opponent TEXT NOT NULL,
+  my_score INTEGER NOT NULL,
+  their_score INTEGER NOT NULL,
+  result TEXT NOT NULL CHECK (result IN ('V','D','N')),
+  created_at INTEGER NOT NULL
+);
+CREATE INDEX IF NOT EXISTS clashes_user ON clashes(user_id, created_at DESC);

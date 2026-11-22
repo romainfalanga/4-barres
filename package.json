@@ -1,0 +1,11 @@
+{
+  "name": "4-barres",
+  "private": true,
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "db:init": "wrangler d1 execute 4-barres --remote --file=schema.sql",
+    "db:init:local": "wrangler d1 execute 4-barres --local --file=schema.sql"
+  },
+  "devDependencies": { "wrangler": "^4" }
+}

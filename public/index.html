@@ -1,0 +1,535 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="description" content="4 Barres : le clash en impro. Une instru, quatre phrases chacun, le dernier mot est imposé.">
+<title>4 Barres</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@600;700&display=swap">
+<style>
+body{margin:0}[hidden]{display:none!important}
+/* Layout : affiche de combat. Deux coins (rouge / bleu) face à face, un projecteur jaune qui suit le temps. Une seule ambiance, sombre, assumée. */
+:root{
+  color-scheme:dark;
+  --nuit:#131f2a;        /* fond : bleu ardoise de salle éteinte */
+  --ring:#1c2d3b;        /* surfaces */
+  --corde:#2c4254;       /* bordures, pastilles de temps */
+  --craie:#f4ecdb;       /* texte */
+  --craie-2:#a9b6bd;     /* texte secondaire */
+  --rouge:#ff5b3d;       /* coin rouge, joueur 1 */
+  --bleu:#3cc6ff;        /* coin bleu, joueur 2 */
+  --spot:#ffd23f;        /* projecteur : balle, rime A, action principale */
+  --rose:#ff9fce;        /* rime B */
+  --encre:#10171d;       /* texte sur aplat clair */
+  --display:"Anton","Arial Narrow",Impact,sans-serif;
+  --label:"Barlow Condensed","Arial Narrow",sans-serif;
+  --body:"Barlow",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+html,body{height:100%}
+body{background:var(--nuit);color:var(--craie);font:400 16px/1.45 var(--body);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  padding-block:0;overflow-x:hidden}
+*{box-sizing:border-box}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--spot);outline-offset:2px}
+.lab{font:700 .8rem/1 var(--label);letter-spacing:.12em;text-transform:uppercase;color:var(--craie-2)}
+.screen{min-height:100%;max-width:1080px;margin:0 auto;padding-block:20px}
+
+/* ---------- Accueil ---------- */
+#home{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);gap:40px;align-items:center}
+.poster{display:flex;flex-direction:column;gap:20px;min-width:0}
+.logo{font:400 clamp(4.2rem,13vw,8.5rem)/.86 var(--display);margin:0;text-transform:uppercase;letter-spacing:.01em}
+.logo b{font-weight:400;color:var(--spot);display:block}
+.tag{font-size:1.15rem;max-width:34ch;margin:0;color:var(--craie)}
+.steps{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:12px;counter-reset:s}
+.steps li{counter-increment:s;display:grid;grid-template-columns:2.2rem 1fr;gap:10px;align-items:baseline;color:var(--craie-2)}
+.steps li::before{content:counter(s);font:400 1.7rem/1 var(--display);color:var(--craie)}
+.steps strong{color:var(--craie);font-weight:600}
+.setup{background:var(--ring);border:1px solid var(--corde);border-radius:6px;padding:22px;display:flex;flex-direction:column;gap:20px;min-width:0}
+.versus{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:10px;align-items:end}
+.versus span.vs{font:400 1.6rem/1 var(--display);padding-bottom:12px;color:var(--craie-2)}
+.name{display:flex;flex-direction:column;gap:6px;min-width:0}
+.name input{width:100%;background:var(--nuit);border:2px solid var(--c);border-radius:4px;padding:10px 12px;font:400 1.35rem/1.1 var(--display);letter-spacing:.03em;text-transform:uppercase;color:var(--c)}
+.name input::placeholder{color:var(--c);opacity:.45}
+.name.p1{--c:var(--rouge)} .name.p2{--c:var(--bleu)}
+.name.p1 .lab{color:var(--rouge)} .name.p2 .lab{color:var(--bleu)}
+.opt{display:flex;flex-direction:column;gap:8px}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.seg button{background:var(--nuit);border:1px solid var(--corde);border-radius:4px;padding:8px 12px;font:600 .95rem/1.1 var(--body);color:var(--craie-2);text-align:left}
+.seg button small{display:block;font:500 .75rem/1.2 var(--body);opacity:.8;margin-top:2px}
+.seg button[aria-pressed="true"]{background:var(--craie);border-color:var(--craie);color:var(--encre)}
+.tempo{display:flex;align-items:center;gap:10px}
+.tempo button{width:38px;height:38px;border-radius:4px;border:1px solid var(--corde);background:var(--nuit);font:700 1.2rem/1 var(--body)}
+.tempo output{font:400 1.5rem/1 var(--display);min-width:3.2ch;text-align:center;font-variant-numeric:tabular-nums}
+.go{background:var(--spot);color:var(--encre);border:0;border-radius:4px;padding:16px 20px;font:400 1.7rem/1 var(--display);letter-spacing:.04em;text-transform:uppercase;transition:transform .08s}
+.go:hover{transform:translateY(-2px)} .go:active{transform:translateY(1px)}
+.fine{font-size:.85rem;color:var(--craie-2);margin:0}
+
+/* ---------- Clash ---------- */
+#game{display:flex;flex-direction:column;gap:14px;position:relative}
+#game::before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.22;transition:background .4s;
+  background:radial-gradient(60% 55% at var(--gx,0%) 0%,var(--pc,transparent),transparent 70%)}
+#game[data-p="0"]{--pc:var(--rouge);--gx:0%} #game[data-p="1"]{--pc:var(--bleu);--gx:100%}
+#game>*{position:relative}
+.board{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:12px;align-items:center}
+.side{display:flex;align-items:baseline;gap:10px;min-width:0;opacity:.45;transition:opacity .3s}
+.side.on{opacity:1}
+.side .n{font:400 clamp(1.1rem,4vw,1.7rem)/1 var(--display);text-transform:uppercase;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.side .s{font:400 clamp(1.4rem,5vw,2.2rem)/1 var(--display);color:var(--craie);font-variant-numeric:tabular-nums}
+.side.a .n{color:var(--rouge)} .side.b .n{color:var(--bleu)} .side.b{justify-content:flex-end}
+.round{text-align:center}
+.call{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;min-height:5.2rem}
+.call .who{font:400 clamp(2.4rem,9vw,4.6rem)/.9 var(--display);text-transform:uppercase;color:var(--pc);margin:0;overflow-wrap:anywhere}
+.call .state{font:400 clamp(1.6rem,6vw,3rem)/.9 var(--display);text-transform:uppercase;color:var(--spot);font-variant-numeric:tabular-nums}
+.angle{margin:0;color:var(--craie-2)} .angle b{color:var(--craie);font-weight:600}
+.grid{position:relative;display:flex;flex-direction:column;gap:clamp(8px,2vh,16px);flex:1;justify-content:center;padding-top:44px}
+.row{display:grid;grid-template-columns:1fr 1fr 1fr minmax(0,2.6fr);gap:10px;align-items:end;opacity:.5;transition:opacity .2s}
+.row.cur{opacity:1} .row.done{opacity:.3}
+.dot{justify-self:center;width:clamp(26px,6vw,44px);height:8px;border-radius:4px;background:var(--corde)}
+.dot.hit{animation:hit .25s}
+.word{--rc:var(--spot);border:2px solid var(--rc);color:var(--rc);border-radius:4px;padding:clamp(8px,1.8vh,16px) 10px;text-align:center;
+  font:400 clamp(1.5rem,6.2vw,3rem)/1 var(--display);text-transform:uppercase;letter-spacing:.02em;overflow-wrap:anywhere;min-width:0}
+.word.kb{--rc:var(--rose)}
+.word.landed{background:var(--rc);color:var(--encre);animation:hit .3s}
+@keyframes hit{0%{transform:translateY(5px) scale(1.04)}100%{transform:none}}
+.ball{position:absolute;left:0;top:0;width:26px;height:26px;margin:-26px 0 0 -13px;border-radius:50%;background:var(--spot);
+  box-shadow:0 0 0 4px color-mix(in srgb,var(--spot) 25%,transparent);will-change:transform;pointer-events:none}
+.ctrl{display:flex;gap:8px;justify-content:space-between;align-items:center}
+.ghost{background:transparent;border:1px solid var(--corde);border-radius:4px;padding:9px 14px;font:600 .95rem/1 var(--body);color:var(--craie)}
+
+/* ---------- Vote / final ---------- */
+#vote,#end{display:flex;flex-direction:column;justify-content:center;gap:22px}
+.big{font:400 clamp(2.4rem,9vw,5rem)/.92 var(--display);text-transform:uppercase;margin:0;text-wrap:balance}
+.picks{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.pick{--c:var(--rouge);background:var(--ring);border:2px solid var(--c);border-radius:6px;padding:20px 16px;text-align:left;display:flex;flex-direction:column;gap:10px;min-width:0}
+.pick.b{--c:var(--bleu)}
+.pick .n{font:400 clamp(1.6rem,6vw,2.8rem)/1 var(--display);text-transform:uppercase;color:var(--c);overflow-wrap:anywhere}
+.pick .w{color:var(--craie-2);font-size:.95rem}
+.pick:hover{background:color-mix(in srgb,var(--c) 14%,var(--ring))}
+.final{display:flex;gap:28px;align-items:baseline;flex-wrap:wrap;font:400 clamp(1.4rem,5vw,2.2rem)/1 var(--display);text-transform:uppercase}
+.final .a{color:var(--rouge)} .final .b{color:var(--bleu)}
+.actions{display:flex;gap:10px;flex-wrap:wrap}
+#end .big span{color:var(--wc,var(--spot))}
+
+/* ---------- Compte ---------- */
+.acct{display:flex;gap:8px 12px;align-items:center;justify-content:space-between;flex-wrap:wrap;padding-bottom:16px;border-bottom:1px solid var(--corde)}
+.acct p{margin:0;color:var(--craie-2);font-size:.95rem;min-width:0} .acct p b{color:var(--craie);font-weight:600}
+.acct div{display:flex;gap:6px;flex-wrap:wrap}
+.name input[readonly]{border-style:dashed}
+dialog{background:var(--ring);color:var(--craie);border:1px solid var(--corde);border-radius:6px;padding:22px;width:min(400px,calc(100vw - 32px))}
+dialog::backdrop{background:rgba(8,13,18,.72)}
+dialog form{display:flex;flex-direction:column;gap:14px}
+dialog h2{font:400 2rem/1 var(--display);text-transform:uppercase;margin:0}
+.field{display:flex;flex-direction:column;gap:6px}
+.field input{background:var(--nuit);border:1px solid var(--corde);border-radius:4px;padding:11px 12px;font-size:1rem;width:100%}
+.err{color:var(--rouge);margin:0;font-weight:600;min-height:1.4em}
+.link{background:none;border:0;padding:0;color:var(--craie-2);text-decoration:underline;text-align:left}
+#profile{display:flex;flex-direction:column;gap:22px}
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.stats div{display:flex;flex-direction:column;gap:6px;min-width:0}
+.stats b{font:400 clamp(1.8rem,7vw,3rem)/1 var(--display);font-variant-numeric:tabular-nums}
+.cols{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:28px}
+.cols section{display:flex;flex-direction:column;gap:10px;min-width:0}
+.list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+.list li{display:grid;grid-template-columns:2rem minmax(0,1fr) auto;gap:10px;padding:9px 0;border-bottom:1px solid var(--corde);align-items:baseline}
+.list li span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.list li i{font:400 1.1rem/1 var(--display);font-style:normal;color:var(--craie-2)}
+.list li em{font-style:normal;color:var(--craie-2);font-variant-numeric:tabular-nums}
+.list .V i{color:var(--spot)} .list .D i{color:var(--rouge)}
+.list .me span{color:var(--spot);font-weight:600}
+.empty{color:var(--craie-2);margin:0}
+@media (max-width:820px){
+  .cols{grid-template-columns:minmax(0,1fr)}
+  #home{grid-template-columns:minmax(0,1fr);gap:24px;align-items:start}
+  .setup{padding:16px}
+}
+@media (max-width:420px){.picks{grid-template-columns:minmax(0,1fr)}}
+@media (prefers-reduced-motion:reduce){.dot.hit,.word.landed{animation:none}.go{transition:none}}
+</style>
+</head>
+<body>
+
+<main id="home" class="screen">
+  <section class="poster">
+    <h1 class="logo">4 <b>Barres</b></h1>
+    <p class="tag">Le clash en impro. Une instru, quatre phrases chacun, et le dernier mot de chaque phrase est imposé.</p>
+    <ol class="steps">
+      <li><span><strong>La balle marque le temps.</strong> Elle rebondit sur chaque temps et retombe sur le mot à la fin de la mesure.</li>
+      <li><span><strong>Tu improvises le début, le mot finit la phrase.</strong> Quatre mesures, quatre vannes sur ton adversaire.</li>
+      <li><span><strong>Le public tranche.</strong> Après chaque manche, on vote pour celui qui a fait le plus rire.</span></li>
+    </ol>
+  </section>
+
+  <form class="setup" id="setup" autocomplete="off">
+    <div class="acct">
+      <p id="acctTxt">Joue en invité, ou connecte-toi pour garder tes stats.</p>
+      <div id="acctOut"><button class="ghost" type="button" id="btnLogin">Connexion</button><button class="ghost" type="button" id="btnSignup">Créer un compte</button></div>
+      <div id="acctIn" hidden><button class="ghost" type="button" id="btnProfile">Profil et classement</button><button class="ghost" type="button" id="btnLogout">Déconnexion</button></div>
+    </div>
+    <div class="versus">
+      <label class="name p1"><span class="lab">Coin rouge</span><input id="n1" maxlength="14" placeholder="Joueur 1"></label>
+      <span class="vs" aria-hidden="true">VS</span>
+      <label class="name p2"><span class="lab">Coin bleu</span><input id="n2" maxlength="14" placeholder="Joueur 2"></label>
+    </div>
+    <div class="opt"><span class="lab">Manches</span>
+      <div class="seg" data-k="rounds">
+        <button type="button" data-v="1">1</button><button type="button" data-v="3">3</button><button type="button" data-v="5">5</button>
+      </div></div>
+    <div class="opt"><span class="lab">Instru</span>
+      <div class="seg" data-k="beat">
+        <button type="button" data-v="boombap">Boom bap</button><button type="button" data-v="oldschool">Old school</button>
+        <button type="button" data-v="trap">Trap</button><button type="button" data-v="drill">Drill</button>
+      </div>
+      <div class="tempo"><button type="button" id="bpmDown" aria-label="Ralentir">−</button><output id="bpm">90</output><span class="lab">BPM</span><button type="button" id="bpmUp" aria-label="Accélérer">+</button></div>
+    </div>
+    <div class="opt"><span class="lab">Rimes</span>
+      <div class="seg" data-k="scheme">
+        <button type="button" data-v="AABB">AABB<small>deux par deux</small></button>
+        <button type="button" data-v="ABAB">ABAB<small>croisées</small></button>
+        <button type="button" data-v="AAAA">AAAA<small>quatre fois la même</small></button>
+      </div></div>
+    <div class="opt"><span class="lab">Angle d'attaque</span>
+      <div class="seg" data-k="angle">
+        <button type="button" data-v="1">Tiré au sort<small>un sujet de vanne à chaque tour</small></button>
+        <button type="button" data-v="0">Libre</button>
+      </div></div>
+    <button class="go" type="submit">Lancer le clash</button>
+    <p class="fine">Un seul écran pour les deux joueurs, son activé. Connecté, tu joues dans le coin rouge et tes résultats sont enregistrés. On clashe pour rire : ce qui se dit sur l'instru reste sur l'instru.</p>
+  </form>
+</main>
+
+<main id="game" class="screen" hidden>
+  <div class="board">
+    <div class="side a" id="sideA"><span class="n" id="gA"></span><span class="s" id="sA">0</span></div>
+    <div class="round lab" id="roundLab"></div>
+    <div class="side b" id="sideB"><span class="s" id="sB">0</span><span class="n" id="gB"></span></div>
+  </div>
+  <div class="call"><h2 class="who" id="who"></h2><div class="state" id="state" aria-live="off"></div></div>
+  <p class="angle" id="angle"></p>
+  <div class="grid" id="grid"><div class="ball" id="ball"></div></div>
+  <div class="ctrl"><button class="ghost" id="quit" type="button">Quitter</button><button class="ghost" id="pause" type="button">Pause</button></div>
+</main>
+
+<main id="vote" class="screen" hidden>
+  <div class="lab" id="voteLab"></div>
+  <h2 class="big">Qui a gagné la manche ?</h2>
+  <div class="picks">
+    <button class="pick a" type="button" data-w="0"><span class="n" id="vA"></span><span class="w" id="vAw"></span></button>
+    <button class="pick b" type="button" data-w="1"><span class="n" id="vB"></span><span class="w" id="vBw"></span></button>
+  </div>
+  <div class="actions"><button class="ghost" type="button" data-w="-1">Égalité, un point chacun</button></div>
+</main>
+
+<main id="profile" class="screen" hidden>
+  <div class="actions"><button class="ghost" type="button" id="profBack">Retour</button></div>
+  <h2 class="big" id="profName"></h2>
+  <div class="stats">
+    <div><b id="stC">0</b><span class="lab">Clashs</span></div>
+    <div><b id="stV">0</b><span class="lab">Victoires</span></div>
+    <div><b id="stD">0</b><span class="lab">Défaites</span></div>
+    <div><b id="stN">0</b><span class="lab">Nuls</span></div>
+  </div>
+  <div class="cols">
+    <section><span class="lab">Derniers clashs</span><ul class="list" id="hist"></ul></section>
+    <section><span class="lab">Classement</span><ul class="list" id="board"></ul></section>
+  </div>
+</main>
+
+<dialog id="auth">
+  <form id="authForm">
+    <h2 id="authTitle">Connexion</h2>
+    <label class="field"><span class="lab">Pseudo</span><input id="aPseudo" name="pseudo" maxlength="14" autocomplete="username" required></label>
+    <label class="field"><span class="lab">Mot de passe</span><input id="aPass" name="password" type="password" minlength="8" maxlength="200" autocomplete="current-password" required></label>
+    <p class="err" id="authErr" role="alert"></p>
+    <button class="go" type="submit" id="authGo">Se connecter</button>
+    <button class="link" type="button" id="authSwitch"></button>
+    <button class="link" type="button" id="authClose">Annuler</button>
+  </form>
+</dialog>
+
+<main id="end" class="screen" hidden>
+  <div class="lab">Fin du clash</div>
+  <h2 class="big" id="endTitle"></h2>
+  <div class="final"><span class="a" id="eA"></span><span class="b" id="eB"></span></div>
+  <div class="actions"><button class="go" id="again" type="button">Revanche</button><button class="ghost" id="back" type="button">Changer les réglages</button></div>
+</main>
+
+<script>
+(() => {
+const $ = id => document.getElementById(id);
+
+/* ---------- Mots : familles de rimes ---------- */
+const FAM = [
+ ['raté','cramé','fauché','paumé','largué','périmé','grillé','flingué'],
+ ['naufrage','visage','garage','chômage','fromage','bagage','dérapage','maquillage'],
+ ['lunettes','chaussettes','casquette','trottinette','raclette','baguette','moquette','squelette'],
+ ['champion','cornichon','carton','pigeon','brouillon','bouffon','caleçon','glaçon'],
+ ['menteur','frimeur','rageur','voleur','erreur','odeur','chômeur','dormeur'],
+ ['classique','panique','plastique','comique','tragique','boutique','moustique','pathétique'],
+ ['ringard','tocard','canard','placard','retard','cafard','vantard','homard'],
+ ['malin','crétin','pantin','lapin','radin','bouquin','baratin','gamin'],
+ ['relou','jaloux','genou','pou','hibou','voyou','chelou','bisou'],
+ ['miroir','trottoir','espoir','mouchoir','désespoir','tiroir','dortoir','peignoir'],
+ ['coiffure','chaussure','figure','voiture','facture','ordure','torture','caricature'],
+ ['confiance','vacances','ambulance','malchance','arrogance','défense','enfance','élégance'],
+ ['sérieusement','franchement','gentiment','lentement','appartement','vêtement','clairement','tristement'],
+ ['grand-mère','galère','misère','colère','vestiaire','adversaire','vulgaire','millionnaire'],
+ ['famille','chenille','pastille','béquille','vanille','brindille','gorille','guenilles'],
+ ['nouille','grenouille','andouille','citrouille','embrouille','magouille','ratatouille','chatouille'],
+ ['poubelle','vaisselle','ficelle','semelle','cervelle','bretelles','nouvelle','échelle'],
+ ['bêtise','valise','chemise','crise','surprise','sottise','cerise','banquise'],
+ ['cerveau','niveau','chapeau','bateau','zéro','boulot','héros','mytho','rigolo','frigo'],
+ ['moche','cloche','poche','brioche','sacoche','fastoche','pioche','galoche'],
+ ['claque','arnaque','baraque','matraque','patraque','cardiaque','maniaque','flaque'],
+ ['cuisine','piscine','routine','tartine','sardine','vitrine','combine','bassine'],
+ ['tante','pente','tente','attente','soixante','méchante','fatigante','gênante'],
+ ['banal','bancal','fatal','animal','normal','journal','hôpital','carnaval'],
+ ['dormir','mentir','souvenir','avenir','fuir','courir','rougir','vomir'],
+ ['étrange','mélange','orange','vidange','louange','phalange','dérange','ange'],
+ ['peureux','honteux','nerveux','sérieux','cheveux','vieux','ennuyeux','boiteux'],
+ ['rigole','école','casserole','parole','boussole','guignol','bagnole','babiole'],
+ ['classe','crevasse','grimace','limace','carcasse','ramasse','tignasse','paillasse'],
+ ['costume','légume','rhume','enclume','plume','bitume','amertume','volume'],
+ ['travail','bétail','portail','éventail','détail','épouvantail','canaille','ferraille'],
+ ['pompier','papier','fumier','sablier','tablier','cahier','premier','dernier'],
+ ['ambition','punition','addition','collection','émotion','déception','illusion','imitation'],
+ ['louche','bouche','mouche','douche','couche','babouche','farouche','cartouche'],
+ ['banane','cabane','caravane','panne','âne','crâne','tisane','sarbacane'],
+ ['ridicule','pendule','bidule','pilule','tentacule','minuscule','majuscule','recule']
+];
+const ANGLES = ['son style vestimentaire','sa coupe de cheveux','sa façon de danser','sa cuisine','son téléphone','sa conduite','sa vie amoureuse',
+ 'son compte en banque','sa ponctualité','ses stories','son niveau au foot','sa playlist','son rire','ses excuses bidon','sa chambre','son humour',
+ 'ses selfies','son niveau aux jeux vidéo','sa façon de chanter','ses chaussures','son réveil le matin','sa façon de draguer','son sens de l\'orientation',
+ 'son frigo vide','ses résolutions du Nouvel An','sa façon de courir','son orthographe','ses goûts en séries'];
+const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.random() * (i + 1) | 0; [a[i], a[j]] = [a[j], a[i]]; } return a; };
+let famDeck = [], angDeck = [];
+const draw = (deck, src) => { if (!deck.length) deck.push(...shuffle(src)); return deck.pop(); };
+function pickWords(scheme) {
+  if (scheme === 'AAAA') return shuffle(draw(famDeck, FAM)).slice(0, 4).map(w => ({ w, k: 'a' }));
+  const a = shuffle(draw(famDeck, FAM)), b = shuffle(draw(famDeck, FAM));
+  return [...scheme].map((c, i) => c === 'A' ? { w: a[i < 2 || scheme === 'AABB' ? (scheme === 'AABB' ? i : 0) : 1], k: 'a' } : { w: b[scheme === 'AABB' ? i - 2 : (i === 1 ? 0 : 1)], k: 'b' });
+}
+
+/* ---------- Réglages ---------- */
+const BEATS = {
+  boombap:  { bpm: 90,  swing: .14, k: 'x.....x...x.....', s: '....x.......x...', h: 'x.x.x.x.x.x.x.x.', st: 'x.....x.........', roots: [55, 55, 43.65, 49] },
+  oldschool:{ bpm: 104, swing: 0,   k: 'x..x..x...x.x...', s: '....x.......x...', h: 'xxxxxxxxxxxxxxxx', st: '..x...x...x.....', roots: [61.74, 61.74, 73.42, 55] },
+  trap:     { bpm: 72,  swing: 0,   k: 'x.....x......x..', s: '........x.......', h: 'xxxxxxrxxxxxxrxr', st: 'x...............', roots: [46.25, 46.25, 36.71, 41.2] },
+  drill:    { bpm: 72,  swing: 0,   k: 'x..x......x..x..', s: '........x.....x.', h: 'x.x.x..x.x.x..x.', st: 'x.....x.....x...', roots: [51.91, 51.91, 46.25, 38.89] }
+};
+let me = null;
+let S = { n1: '', n2: '', rounds: '3', beat: 'boombap', bpm: 90, scheme: 'AABB', angle: '1' };
+try { Object.assign(S, JSON.parse(localStorage.getItem('4barres') || '{}')); } catch (e) {}
+const save = () => { try { localStorage.setItem('4barres', JSON.stringify(S)); } catch (e) {} };
+function syncSetup() {
+  document.querySelectorAll('.seg').forEach(g => g.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.v === String(S[g.dataset.k])))));
+  $('bpm').textContent = S.bpm; $('n1').value = me ? me.pseudo : S.n1; $('n2').value = S.n2;
+}
+document.querySelectorAll('.seg').forEach(g => g.addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  S[g.dataset.k] = b.dataset.v; if (g.dataset.k === 'beat') S.bpm = BEATS[S.beat].bpm;
+  save(); syncSetup();
+}));
+const bump = d => { S.bpm = Math.max(60, Math.min(130, S.bpm + d)); save(); syncSetup(); };
+$('bpmDown').onclick = () => bump(-4); $('bpmUp').onclick = () => bump(4);
+$('n1').oninput = e => { if (me) return; S.n1 = e.target.value; save(); }; $('n2').oninput = e => { S.n2 = e.target.value; save(); };
+syncSetup();
+
+const show = id => ['home', 'game', 'vote', 'end', 'profile'].forEach(s => $(s).hidden = s !== id);
+const names = () => [me ? me.pseudo : S.n1.trim() || 'Joueur 1', S.n2.trim() || 'Joueur 2'];
+
+/* ---------- Compte : inscription, connexion, stats ---------- */
+let mode = 'login';
+async function call(path, body) {
+  const r = await fetch(path, body ? { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) } : {});
+  const d = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(d.error || 'Erreur réseau, réessaie.');
+  return d;
+}
+function setMe(u) {
+  me = u;
+  $('acctOut').hidden = !!me; $('acctIn').hidden = !me;
+  $('acctTxt').innerHTML = me ? 'Connecté : <b></b>' : 'Joue en invité, ou connecte-toi pour garder tes stats.';
+  if (me) $('acctTxt').querySelector('b').textContent = me.pseudo;
+  $('n1').readOnly = !!me; $('n1').value = me ? me.pseudo : S.n1;
+}
+function openAuth(m) {
+  mode = m; const up = m === 'signup';
+  $('authTitle').textContent = up ? 'Créer un compte' : 'Connexion';
+  $('authGo').textContent = up ? 'Créer mon compte' : 'Se connecter';
+  $('authSwitch').textContent = up ? 'J\'ai déjà un compte' : 'Pas encore de compte ? En créer un';
+  $('aPass').autocomplete = up ? 'new-password' : 'current-password';
+  $('authErr').textContent = ''; $('aPass').value = '';
+  if (!$('auth').open) $('auth').showModal();
+}
+$('btnLogin').onclick = () => openAuth('login'); $('btnSignup').onclick = () => openAuth('signup');
+$('authSwitch').onclick = () => openAuth(mode === 'login' ? 'signup' : 'login');
+$('authClose').onclick = () => $('auth').close();
+$('authForm').addEventListener('submit', async e => {
+  e.preventDefault(); $('authErr').textContent = ''; $('authGo').disabled = true;
+  try { const d = await call('/api/' + mode, { pseudo: $('aPseudo').value, password: $('aPass').value }); setMe(d.user); $('auth').close(); }
+  catch (err) { $('authErr').textContent = err.message; }
+  $('authGo').disabled = false;
+});
+$('btnLogout').onclick = async () => { try { await call('/api/logout', {}); } catch (e) {} setMe(null); };
+const li = (cls, a, b, c) => { const l = document.createElement('li'); l.className = cls; const i = document.createElement('i'), s = document.createElement('span'), m = document.createElement('em'); i.textContent = a; s.textContent = b; m.textContent = c; l.append(i, s, m); return l; };
+async function openProfile() {
+  show('profile'); $('profName').textContent = me.pseudo;
+  try {
+    const [p, b] = await Promise.all([call('/api/me'), call('/api/leaderboard')]);
+    if (!p.user) { setMe(null); return show('home'); }
+    $('stC').textContent = p.stats.clashs; $('stV').textContent = p.stats.victoires; $('stD').textContent = p.stats.defaites; $('stN').textContent = p.stats.nuls;
+    $('hist').replaceChildren(...p.history.map(h => li(h.result, h.result, 'contre ' + h.opponent, h.my_score + ' – ' + h.their_score)));
+    if (!p.history.length) $('hist').innerHTML = '<p class="empty">Aucun clash enregistré pour l\'instant. Lance le premier.</p>';
+    $('board').replaceChildren(...b.leaderboard.map((r, i) => li(r.pseudo === me.pseudo ? 'me' : '', i + 1, r.pseudo, r.victoires + ' V / ' + r.clashs)));
+    if (!b.leaderboard.length) $('board').innerHTML = '<p class="empty">Le classement est vide. La première place est à prendre.</p>';
+  } catch (err) { $('hist').innerHTML = '<p class="empty"></p>'; $('hist').firstChild.textContent = err.message; }
+}
+$('btnProfile').onclick = openProfile; $('profBack').onclick = () => show('home');
+function saveClash() {
+  if (!me || !G || G.saved) return; G.saved = true;
+  call('/api/clashes', { opponent: names()[1], myScore: G.score[0], theirScore: G.score[1] }).catch(() => { G.saved = false; });
+}
+call('/api/me').then(d => setMe(d.user)).catch(() => {});
+
+/* ---------- Son : instru synthétisée ---------- */
+let ctx, master, noise;
+function audio() {
+  if (ctx) return;
+  ctx = new (window.AudioContext || window.webkitAudioContext)();
+  const comp = ctx.createDynamicsCompressor(); master = ctx.createGain(); master.gain.value = .9;
+  master.connect(comp); comp.connect(ctx.destination);
+  noise = ctx.createBuffer(1, ctx.sampleRate, ctx.sampleRate);
+  const d = noise.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+}
+function env(t, peak, dur) { const g = ctx.createGain(); g.gain.setValueAtTime(peak, t); g.gain.exponentialRampToValueAtTime(.001, t + dur); g.connect(master); return g; }
+function kick(t, v = 1) { const o = ctx.createOscillator(); o.frequency.setValueAtTime(150, t); o.frequency.exponentialRampToValueAtTime(42, t + .12); o.connect(env(t, v, .32)); o.start(t); o.stop(t + .34); }
+function nz(t, peak, dur, type, freq) { const s = ctx.createBufferSource(); s.buffer = noise; const f = ctx.createBiquadFilter(); f.type = type; f.frequency.value = freq; s.connect(f); f.connect(env(t, peak, dur)); s.start(t); s.stop(t + dur + .02); }
+function snare(t) { nz(t, .55, .16, 'bandpass', 1900); const o = ctx.createOscillator(); o.type = 'triangle'; o.frequency.setValueAtTime(210, t); o.frequency.exponentialRampToValueAtTime(140, t + .08); o.connect(env(t, .35, .1)); o.start(t); o.stop(t + .12); }
+function hat(t, v = .16) { nz(t, v, .04, 'highpass', 7500); }
+function tone(t, f, dur, type, peak, cut) { const o = ctx.createOscillator(); o.type = type; o.frequency.value = f; const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = cut; o.connect(lp); lp.connect(env(t, peak, dur)); o.start(t); o.stop(t + dur + .02); }
+function bass(t, f, dur) { tone(t, f, dur, 'sine', .55, 400); tone(t, f * 2, dur, 'triangle', .22, 500); }
+function stab(t, f) { [1, 1.189, 1.498].forEach(m => tone(t, f * 8 * m, .2, 'sawtooth', .035, 1500)); }
+
+/* ---------- Déroulé d'une manche : par joueur, 2 mesures de préparation puis 4 mesures ---------- */
+const PREP = 8, VERSE = 16, TURN = PREP + VERSE, ROUND = TURN * 2;
+let G = null, raf = 0, timer = 0;
+
+function schedule() {
+  const B = BEATS[S.beat], spb = 60 / S.bpm, sd = spb / 4;
+  while (G.step <= ROUND * 4 && G.t0 + G.step * sd < ctx.currentTime + .15) {
+    const st = G.step, i = st % 16; let t = G.t0 + st * sd; if (i % 2) t += B.swing * sd;
+    if (st === ROUND * 4) { kick(t); nz(t, .3, .9, 'highpass', 5000); G.step++; break; }
+    const local = (st / 4) % TURN;
+    if (local < PREP) {            // préparation : batterie allégée + décompte sur la 2e mesure
+      if (i % 4 === 0) kick(t, .7);
+      if (i % 4 === 2) hat(t);
+      if (local >= 4 && i % 4 === 0) tone(t, 880, .09, 'square', .09, 3000);
+    } else {
+      const bar = Math.floor((local - PREP) / 4), root = B.roots[bar];
+      if (B.k[i] === 'x') { kick(t); bass(t, root, sd * 2.6); }
+      if (B.s[i] === 'x') snare(t);
+      if (B.h[i] === 'x') hat(t, i % 4 === 0 ? .2 : .13);
+      if (B.h[i] === 'r') { hat(t, .13); hat(t + sd / 2, .1); }
+      if (B.st[i] === 'x') stab(t, root);
+    }
+    G.step++;
+  }
+}
+
+function buildGrid(turn) {
+  const grid = $('grid'); grid.querySelectorAll('.row').forEach(r => r.remove());
+  turn.words.forEach(o => {
+    const r = document.createElement('div'); r.className = 'row';
+    r.innerHTML = '<i class="dot"></i><i class="dot"></i><i class="dot"></i>';
+    const w = document.createElement('div'); w.className = 'word k' + o.k; w.textContent = o.w; r.appendChild(w);
+    grid.appendChild(r);
+  });
+  G.cells = [...grid.querySelectorAll('.dot,.word')];
+  G.rows = [...grid.querySelectorAll('.row')];
+  measure();
+}
+function measure() {
+  if (!G || !G.cells) return;
+  const g = $('grid').getBoundingClientRect();
+  G.pts = G.cells.map(c => { const r = c.getBoundingClientRect(); return { x: r.left + r.width / 2 - g.left, y: r.top - g.top - 3 }; });
+}
+new ResizeObserver(measure).observe($('grid'));
+
+function setTurn(ti) {
+  G.ti = ti; G.lastHit = -1;
+  const turn = G.turns[ti], nm = names();
+  $('game').dataset.p = turn.p;
+  $('sideA').classList.toggle('on', turn.p === 0); $('sideB').classList.toggle('on', turn.p === 1);
+  $('who').textContent = nm[turn.p];
+  $('angle').innerHTML = turn.angle ? 'Angle d\'attaque : <b></b>' : '';
+  if (turn.angle) $('angle').querySelector('b').textContent = turn.angle;
+  buildGrid(turn);
+}
+
+function frame() {
+  raf = requestAnimationFrame(frame);
+  const beat = (ctx.currentTime - G.t0) / (60 / S.bpm);
+  if (beat >= ROUND) return endRound();
+  if (beat < 0) return;
+  const ti = beat < TURN ? 0 : 1; if (ti !== G.ti) setTurn(ti);
+  const vb = beat - ti * TURN - PREP;                    // position dans le couplet, négative pendant la préparation
+  const txt = vb < -4 ? 'Prépare-toi' : vb < 0 ? String(Math.ceil(-vb)) : 'Phrase ' + (Math.floor(vb / 4) + 1) + ' / 4';
+  if (txt !== G.txt) $('state').textContent = G.txt = txt;
+  const P = G.pts, b = Math.floor(vb), u = vb - b;
+  const from = P[Math.max(0, Math.min(15, b))], to = P[Math.max(0, Math.min(15, b + 1))];
+  const h = (to.y !== from.y ? 46 : 30) * 4 * u * (1 - u);
+  $('ball').style.transform = `translate(${from.x + (to.x - from.x) * u}px,${from.y + (to.y - from.y) * u - h}px)`;
+  if (b >= 0 && b !== G.lastHit) {
+    G.lastHit = b;
+    const c = G.cells[b]; c.classList.remove('hit'); void c.offsetWidth; c.classList.add(c.classList.contains('word') ? 'landed' : 'hit');
+    const row = b >> 2; G.rows.forEach((r, i) => { r.classList.toggle('cur', i === row); r.classList.toggle('done', i < row); });
+  } else if (b < 0 && G.lastHit !== -2) { G.lastHit = -2; G.rows.forEach((r, i) => r.classList.toggle('cur', i === 0)); }
+}
+
+function startRound() {
+  audio(); ctx.resume();
+  const first = G.round % 2, mk = p => ({ p, words: pickWords(S.scheme), angle: S.angle === '1' ? draw(angDeck, ANGLES) : '' });
+  G.turns = [mk(first), mk(1 - first)];
+  const nm = names();
+  $('gA').textContent = nm[0]; $('gB').textContent = nm[1]; $('sA').textContent = G.score[0]; $('sB').textContent = G.score[1];
+  $('roundLab').textContent = G.decider ? 'Manche décisive' : 'Manche ' + (G.round + 1) + ' / ' + G.total;
+  $('pause').textContent = 'Pause'; G.txt = '';
+  show('game');
+  G.t0 = ctx.currentTime + .25; G.step = 0;
+  setTurn(0);
+  clearInterval(timer); timer = setInterval(schedule, 40); schedule();
+  cancelAnimationFrame(raf); raf = requestAnimationFrame(frame);
+  try { navigator.wakeLock && navigator.wakeLock.request('screen').catch(() => {}); } catch (e) {}
+}
+function stopLoop() { cancelAnimationFrame(raf); clearInterval(timer); }
+function endRound() {
+  stopLoop();
+  const nm = names(), by = p => G.turns.find(t => t.p === p).words.map(o => o.w).join(' · ');
+  $('voteLab').textContent = $('roundLab').textContent;
+  $('vA').textContent = nm[0]; $('vB').textContent = nm[1]; $('vAw').textContent = by(0); $('vBw').textContent = by(1);
+  setTimeout(() => show('vote'), 450);
+}
+$('vote').addEventListener('click', e => {
+  const b = e.target.closest('[data-w]'); if (!b) return;
+  const w = +b.dataset.w; if (w < 0) { G.score[0]++; G.score[1]++; } else G.score[w]++;
+  G.round++;
+  if (G.round < G.total) return startRound();
+  const nm = names(), [a, c] = G.score, t = $('endTitle');
+  $('eA').textContent = nm[0] + ' ' + a; $('eB').textContent = nm[1] + ' ' + c;
+  t.textContent = '';
+  if (a === c) { t.textContent = 'Égalité parfaite'; $('again').textContent = 'Manche décisive'; $('end').style.removeProperty('--wc'); }
+  else { const s = document.createElement('span'); s.textContent = nm[a > c ? 0 : 1]; t.append(s, ' remporte le clash'); $('again').textContent = 'Revanche'; $('end').style.setProperty('--wc', a > c ? 'var(--rouge)' : 'var(--bleu)'); saveClash(); }
+  show('end');
+});
+function newGame() { G = { round: 0, total: +S.rounds, score: [0, 0] }; startRound(); }
+$('setup').addEventListener('submit', e => { e.preventDefault(); newGame(); });
+$('again').onclick = () => { if (G.score[0] === G.score[1]) { G.total++; G.decider = true; startRound(); } else newGame(); };
+$('back').onclick = () => { saveClash(); show('home'); };
+$('quit').onclick = () => { stopLoop(); ctx && ctx.suspend(); show('home'); };
+$('pause').onclick = () => { if (ctx.state === 'running') { ctx.suspend(); $('pause').textContent = 'Reprendre'; } else { ctx.resume(); $('pause').textContent = 'Pause'; } };
+})();
+</script>
+</body>
+</html>
