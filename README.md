@@ -32,3 +32,7 @@ npm run deploy
 ## Comptes
 
 Pseudo + mot de passe, sans e-mail. Les mots de passe sont hachés (PBKDF2-SHA256, sel par utilisateur) et la session tient dans un cookie `HttpOnly`.
+
+## Déploiement
+
+Chaque push sur `main` est déployé automatiquement sur Cloudflare (Workers Builds).
