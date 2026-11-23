@@ -77,7 +77,6 @@ button{cursor:pointer;-webkit-tap-highlight-color:transparent}
 .cell.word.mute{background:transparent;color:var(--rc);border-style:dashed}
 .cell.word.landed{animation:land .3s}
 @keyframes land{0%{transform:scale(1.12)}100%{transform:none}}
-.row.next{opacity:.6} .row.far{opacity:.4} .row.done{opacity:.3}
 .ball{position:absolute;left:0;top:0;width:30px;height:30px;margin:-30px 0 0 -15px;border-radius:50%;z-index:2;pointer-events:none;will-change:transform;
   background:radial-gradient(circle at 35% 30%,#fff3b8,var(--spot) 45%,#d99a10);box-shadow:0 6px 14px rgba(0,0,0,.45)}
 
@@ -126,13 +125,20 @@ button{cursor:pointer;-webkit-tap-highlight-color:transparent}
 .side{display:flex;align-items:baseline;gap:8px;min-width:0;opacity:.45;transition:opacity .3s}
 .side.on{opacity:1}
 .side .n{font:400 1.15rem/1 var(--display);text-transform:uppercase;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
-.side .s{font:400 1.5rem/1 var(--display);font-variant-numeric:tabular-nums}
 .side.a .n{color:var(--rouge)} .side.b .n{color:var(--bleu)} .side.b{justify-content:flex-end}
 .call{display:flex;justify-content:space-between;align-items:flex-end;gap:10px;min-height:3.4rem}
 .call .who{font:400 clamp(1.9rem,9vw,2.8rem)/.95 var(--display);text-transform:uppercase;color:var(--pc);margin:0;overflow-wrap:anywhere;min-width:0}
 .call .state{font:400 1.25rem/1 var(--display);text-transform:uppercase;color:var(--spot);white-space:nowrap;font-variant-numeric:tabular-nums}
-.angle{margin:0;color:var(--craie-2);min-height:1.45em} .angle b{color:var(--craie);font-weight:600}
-#grid{padding-top:44px;flex:1;justify-content:center}
+.angle{margin:0;color:var(--craie-2);min-height:1.45em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis} .angle b{color:var(--craie);font-weight:600}
+#grid{position:relative;flex:1;min-height:330px;overflow:hidden;display:block}
+.track{position:absolute;left:0;right:0;top:0;display:flex;flex-direction:column;gap:8px;padding-top:56px;transition:transform .35s ease;will-change:transform}
+.th{display:flex;gap:8px;align-items:baseline;padding:6px 22px 0;font:400 1.05rem/1 var(--display);text-transform:uppercase;letter-spacing:.03em;color:var(--c);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.th small{font:500 .82rem/1 var(--body);text-transform:none;letter-spacing:0;color:var(--craie-2);overflow:hidden;text-overflow:ellipsis}
+.th.p0,.row.p0{--c:var(--rouge)} .th.p1,.row.p1{--c:var(--bleu)}
+.track .row .num{color:var(--c,var(--craie-2))}
+.track .row:not(.cnt) .cell:not(.word){border-color:color-mix(in srgb,var(--c) 38%,var(--case))}
+.seg button:disabled{opacity:.35;cursor:not-allowed}
+.len{display:flex;flex-direction:column;gap:8px}
 .player{background:var(--encre);border:1px solid var(--corde);border-radius:14px;padding:12px}
 
 /* ---------- Vote, récap, profil, dico ---------- */
@@ -201,11 +207,9 @@ dialog h2{font:400 2rem/1 var(--display);text-transform:uppercase;margin:0}
       <button type="button" data-v="AABB">AABB</button><button type="button" data-v="ABAB">ABAB</button><button type="button" data-v="AAAA">AAAA</button></div></div>
     <div class="opt"><span class="lab">Mots affichés</span><div class="seg" data-k="fill">
       <button type="button" data-v="all">Tous</button><button type="button" data-v="first">Le premier</button><button type="button" data-v="last">Le dernier</button><button type="button" data-v="none">Aucun</button></div></div>
-    <div class="opt"><span class="lab">Manches</span><div class="seg" data-k="rounds">
-      <button type="button" data-v="1">1</button><button type="button" data-v="3">3</button><button type="button" data-v="5">5</button></div></div>
     <div class="opt"><span class="lab">Angle d'attaque</span><div class="seg" data-k="angle">
       <button type="button" data-v="1">Tiré au sort</button><button type="button" data-v="0">Libre</button></div></div>
-    <div class="opt"><span class="lab">Tempo</span>
+    <div class="opt" id="tempoOpt"><span class="lab">Tempo (instrus synthé)</span>
       <div class="tempo"><button type="button" id="bpmDown" aria-label="Ralentir">−</button><output id="bpm">90</output><span class="lab">BPM</span><button type="button" id="bpmUp" aria-label="Accélérer">+</button></div></div>
   </div>
   <div class="card versus">
@@ -213,6 +217,9 @@ dialog h2{font:400 2rem/1 var(--display);text-transform:uppercase;margin:0}
     <span class="vs" aria-hidden="true">VS</span>
     <label class="name p2"><span class="lab">Coin bleu</span><input id="n2" maxlength="14" placeholder="Joueur 2" autocomplete="off"></label>
   </div>
+  <div class="card len"><span class="lab">Durée du clash</span>
+    <div class="seg" data-k="bars"><button type="button" data-v="16">16 mesures</button><button type="button" data-v="32">32 mesures</button><button type="button" data-v="64">64 mesures</button></div>
+    <div class="sub" id="lenS" style="font-size:.88rem;color:var(--craie-2)"></div></div>
   <div class="card car" data-car="diff"><button class="arr" type="button" data-d="-1" aria-label="Difficulté précédente">‹</button>
     <div><div class="lab">Difficulté</div><div class="val" id="diffV"></div><div class="sub" id="diffS"></div></div>
     <button class="arr" type="button" data-d="1" aria-label="Difficulté suivante">›</button></div>
@@ -231,13 +238,13 @@ dialog h2{font:400 2rem/1 var(--display);text-transform:uppercase;margin:0}
 <main id="game" class="screen" hidden>
   <div class="board">
     <button class="backb" type="button" id="quit" aria-label="Quitter le clash">‹</button>
-    <div class="side a" id="sideA"><span class="n" id="gA"></span><span class="s" id="sA">0</span></div>
+    <div class="side a" id="sideA"><span class="n" id="gA"></span></div>
     <div class="lab" id="roundLab"></div>
-    <div class="side b" id="sideB"><span class="s" id="sB">0</span><span class="n" id="gB"></span></div>
+    <div class="side b" id="sideB"><span class="n" id="gB"></span></div>
   </div>
   <div class="call"><h2 class="who" id="who"></h2><div class="state" id="state"></div></div>
   <p class="angle" id="angle"></p>
-  <div class="grid" id="grid"><div class="ball" id="ball"></div></div>
+  <div class="grid" id="grid"><div class="track" id="track"><div class="ball" id="ball"></div></div></div>
   <div class="player">
     <div class="np"><div class="art" id="gArt"></div><div style="min-width:0"><div class="t" id="gT"></div><div class="s" id="gS"></div></div>
       <div class="ctl"><button class="ic big" type="button" id="pause" aria-label="Pause">⏸</button></div></div>
@@ -247,7 +254,7 @@ dialog h2{font:400 2rem/1 var(--display);text-transform:uppercase;margin:0}
 
 <main id="vote" class="screen" hidden>
   <div class="lab" id="voteLab"></div>
-  <h2 class="big">Qui a gagné la manche ?</h2>
+  <h2 class="big">Qui a gagné le clash ?</h2>
   <div class="picks">
     <button class="pick a" type="button" data-w="0"><span class="n" id="vA"></span><span class="w" id="vAw"></span></button>
     <button class="pick b" type="button" data-w="1"><span class="n" id="vB"></span><span class="w" id="vBw"></span></button>
@@ -258,7 +265,6 @@ dialog h2{font:400 2rem/1 var(--display);text-transform:uppercase;margin:0}
 <main id="end" class="screen" hidden>
   <div class="lab">Récap du clash</div>
   <h2 class="big" id="endTitle"></h2>
-  <div class="final"><span class="a" id="eA"></span><span class="b" id="eB"></span></div>
   <div class="card" style="display:flex;flex-direction:column;gap:10px"><span class="lab">Les mots du clash · touche un mot pour voir ses rimes</span><div class="chips" id="endWords"></div></div>
   <div class="actions"><button class="play" id="again" type="button">Revanche</button><button class="ghost" id="back" type="button">Retour à l'accueil</button></div>
 </main>
@@ -355,10 +361,16 @@ const DIFFS = [
   { id: 'exp', n: 'Expert', s: 'Quatre fois la même rime · AAAA', c: 'var(--rouge)', fill: 'last', scheme: 'AAAA' }
 ];
 const BEATS = [
-  { id: 'boombap', n: 'Pavé', g: 'Boom bap', lvl: 'Facile', c: 'var(--spot)', bpm: 90, swing: .14, k: 'x.....x...x.....', s: '....x.......x...', h: 'x.x.x.x.x.x.x.x.', st: 'x.....x.........', roots: [55, 55, 43.65, 49] },
-  { id: 'oldschool', n: 'Platine', g: 'Old school', lvl: 'Moyen', c: 'var(--vert)', bpm: 104, swing: 0, k: 'x..x..x...x.x...', s: '....x.......x...', h: 'xxxxxxxxxxxxxxxx', st: '..x...x...x.....', roots: [61.74, 61.74, 73.42, 55] },
-  { id: 'trap', n: 'Néon', g: 'Trap', lvl: 'Facile', c: 'var(--rose)', bpm: 72, swing: 0, k: 'x.....x......x..', s: '........x.......', h: 'xxxxxxrxxxxxxrxr', st: 'x...............', roots: [46.25, 46.25, 36.71, 41.2] },
-  { id: 'drill', n: 'Brume', g: 'Drill', lvl: 'Difficile', c: 'var(--bleu)', bpm: 72, swing: 0, k: 'x..x......x..x..', s: '........x.....x.', h: 'x.x.x..x.x.x..x.', st: 'x.....x.....x...', roots: [51.91, 51.91, 46.25, 38.89] }
+  // Vraies instrus, licence CC0 (domaine public). Chaque fichier commence 2 mesures avant le couplet.
+  { id: 'tension', n: 'Tension In The Air', a: 'HoliznaCC0', g: 'Hip-hop', c: 'var(--rouge)', bpm: 90, src: '/beats/tension.mp3', max: 64 },
+  { id: 'abducted', n: 'Abducted', a: 'HoliznaCC0', g: 'Hip-hop', c: 'var(--orange)', bpm: 95, src: '/beats/abducted.mp3', max: 64 },
+  { id: 'shadow', n: 'Shadow Self', a: 'HoliznaCC0', g: 'Hip-hop', c: 'var(--craie)', bpm: 95, src: '/beats/shadow.mp3', max: 64 },
+  { id: 'cobwebs', n: 'CobWebs', a: 'HoliznaCC0', g: 'Hip-hop', c: 'var(--vert)', bpm: 89.978, src: '/beats/cobwebs.mp3', max: 32 },
+  { id: 'mystery', n: 'Mystery Go Brrrr', a: 'Fupi', g: 'Beat', c: 'var(--bleu)', bpm: 80, src: '/beats/mystery.mp3', max: 32 },
+  { id: 'boombap', n: 'Pavé', a: 'Synthé maison', g: 'Boom bap', max: 64, c: 'var(--spot)', bpm: 90, swing: .14, k: 'x.....x...x.....', s: '....x.......x...', h: 'x.x.x.x.x.x.x.x.', st: 'x.....x.........', roots: [55, 55, 43.65, 49] },
+  { id: 'oldschool', n: 'Platine', a: 'Synthé maison', g: 'Old school', max: 64, c: 'var(--vert)', bpm: 104, swing: 0, k: 'x..x..x...x.x...', s: '....x.......x...', h: 'xxxxxxxxxxxxxxxx', st: '..x...x...x.....', roots: [61.74, 61.74, 73.42, 55] },
+  { id: 'trap', n: 'Néon', a: 'Synthé maison', g: 'Trap', max: 64, c: 'var(--rose)', bpm: 72, swing: 0, k: 'x.....x......x..', s: '........x.......', h: 'xxxxxxrxxxxxxrxr', st: 'x...............', roots: [46.25, 46.25, 36.71, 41.2] },
+  { id: 'drill', n: 'Brume', a: 'Synthé maison', g: 'Drill', max: 64, c: 'var(--bleu)', bpm: 72, swing: 0, k: 'x..x......x..x..', s: '........x.....x.', h: 'x.x.x..x.x.x..x.', st: 'x.....x.....x...', roots: [51.91, 51.91, 46.25, 38.89] }
 ];
 const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.random() * (i + 1) | 0; [a[i], a[j]] = [a[j], a[i]]; } return a; };
 let famDeck = [], angDeck = [];
@@ -381,9 +393,9 @@ function wordCell(words, i) {
 
 /* ---------- Réglages ---------- */
 let me = null, mode = 'login';
-let S = { n1: '', n2: '', rounds: '3', beat: 'boombap', bpm: 90, diff: 'deb', scheme: 'AABB', fill: 'all', list: 'mix', angle: '1', adv: false };
-try { Object.assign(S, JSON.parse(localStorage.getItem('4barres2') || '{}')); } catch (e) {}
-const save = () => { try { localStorage.setItem('4barres2', JSON.stringify(S)); } catch (e) {} };
+let S = { n1: '', n2: '', bars: '16', beat: 'tension', bpm: 90, diff: 'deb', scheme: 'AABB', fill: 'all', list: 'mix', angle: '1', adv: false };
+try { Object.assign(S, JSON.parse(localStorage.getItem('4barres3') || '{}')); } catch (e) {}
+const save = () => { try { localStorage.setItem('4barres3', JSON.stringify(S)); } catch (e) {} };
 const beat = () => BEATS.find(b => b.id === S.beat) || BEATS[0];
 const names = () => [me ? me.pseudo : S.n1.trim() || 'Joueur 1', S.n2.trim() || 'Joueur 2'];
 function preview() {
@@ -397,9 +409,14 @@ function sync(redraw = true) {
   $('diffV').textContent = d ? d.n : 'Sur mesure'; $('diffV').style.color = d ? d.c : 'var(--craie)';
   $('diffS').textContent = d ? d.s : 'Réglages avancés modifiés';
   const l = LISTS.find(x => x.id === S.list) || LISTS[0]; S.list = l.id; $('listV').textContent = l.n; $('listS').textContent = l.s;
-  const b = beat(); art($('bArt'), b); $('bT').textContent = b.n; $('bS').textContent = S.bpm + ' BPM · ' + b.g + ' · ' + b.lvl;
+  const b = beat(); if (b.src) S.bpm = b.bpm; if (+S.bars > b.max) S.bars = String(b.max);
+  art($('bArt'), b); $('bT').textContent = b.n; $('bS').textContent = b.a + ' · ' + Math.round(S.bpm) + ' BPM · ' + b.g;
+  document.querySelectorAll('[data-k=bars] button').forEach(x => x.disabled = +x.dataset.v > b.max);
+  const turns = S.bars / 4, sec = Math.round((+S.bars + 2) * 240 / S.bpm);
+  $('lenS').textContent = `${turns} passages de 4 mesures, ${turns / 2} chacun · environ ${Math.floor(sec / 60)} min ${String(sec % 60).padStart(2, '0')}` + (b.max < 64 ? ' · cette instru va jusqu\'à ' + b.max + ' mesures' : '');
+  $('tempoOpt').hidden = !!b.src;
   document.querySelectorAll('.seg').forEach(g => g.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', String(x.dataset.v === String(S[g.dataset.k])))));
-  $('bpm').textContent = S.bpm; $('n1').value = me ? me.pseudo : S.n1; $('n1').readOnly = !!me; $('n2').value = S.n2;
+  $('bpm').textContent = Math.round(S.bpm); $('n1').value = me ? me.pseudo : S.n1; $('n1').readOnly = !!me; $('n2').value = S.n2;
   $('adv').hidden = !S.adv; $('advT').textContent = S.adv ? 'Masquer les réglages avancés ‹' : 'Réglages avancés ›';
   save(); if (redraw) preview();
 }
@@ -412,7 +429,7 @@ document.querySelectorAll('[data-car]').forEach(c => c.addEventListener('click',
 }));
 function stepBeat(d) { const i = BEATS.indexOf(beat()), b = BEATS[(i + d + BEATS.length) % BEATS.length]; S.beat = b.id; S.bpm = b.bpm; const was = !!pvTimer; stopPreview(); sync(false); if (was) startPreview(); }
 $('bPrev').onclick = () => stepBeat(-1); $('bNext').onclick = () => stepBeat(1);
-const bump = d => { S.bpm = Math.max(60, Math.min(130, S.bpm + d)); const was = !!pvTimer; stopPreview(); sync(false); if (was) startPreview(); };
+const bump = d => { if (beat().src) return; S.bpm = Math.max(60, Math.min(130, S.bpm + d)); const was = !!pvTimer; stopPreview(); sync(false); if (was) startPreview(); };
 $('bpmDown').onclick = () => bump(-4); $('bpmUp').onclick = () => bump(4);
 $('advT').onclick = () => { S.adv = !S.adv; sync(false); };
 $('pv').onclick = preview;
@@ -450,123 +467,154 @@ function full(B, i, t, bar, sd) {      // un pas (double croche) de l'instru com
   if (B.st[i] === 'x') stab(t, root);
 }
 
-/* Écoute de l'instru sur l'écran de préparation */
-let pvTimer = 0, pvRaf = 0, pv0 = 0, pvStep = 0;
-function startPreview() {
-  audio(); ctx.resume(); pv0 = ctx.currentTime + .1; pvStep = 0; $('bPlay').textContent = '⏸';
-  const B = beat(), sd = 60 / S.bpm / 4;
-  const tick = () => { while (pv0 + pvStep * sd < ctx.currentTime + .15) { const i = pvStep % 16; full(B, i, pv0 + pvStep * sd + (i % 2 ? B.swing * sd : 0), pvStep >> 4, sd); pvStep++; } };
-  pvTimer = setInterval(tick, 40); tick();
-  const draw = () => { pvRaf = requestAnimationFrame(draw); $('bProg').style.width = (((ctx.currentTime - pv0) / (sd * 64)) % 1) * 100 + '%'; }; draw();
+/* Vraies instrus : chargées à la demande puis gardées en mémoire */
+const buffers = {};
+function loadBeat(b) {
+  if (!buffers[b.id]) buffers[b.id] = fetch(b.src).then(r => { if (!r.ok) throw new Error('instru'); return r.arrayBuffer(); })
+    .then(ab => new Promise((ok, ko) => ctx.decodeAudioData(ab, ok, ko))).catch(e => { delete buffers[b.id]; throw e; });
+  return buffers[b.id];
 }
-function stopPreview() { if (!pvTimer) return; clearInterval(pvTimer); cancelAnimationFrame(pvRaf); pvTimer = 0; $('bPlay').textContent = '▶'; $('bProg').style.width = '0'; }
+function playBuffer(buf, when, offset) {
+  const src = ctx.createBufferSource(), g = ctx.createGain(); src.buffer = buf; src.connect(g); g.connect(master); src.start(when, offset);
+  return { src, g, stop(t = ctx.currentTime, fade = .05) { try { g.gain.setValueAtTime(1, t); g.gain.linearRampToValueAtTime(0, t + fade); src.stop(t + fade + .02); } catch (e) {} } };
+}
+
+/* Écoute de l'instru sur l'écran de préparation */
+let pvTimer = 0, pvRaf = 0, pvNode = null, pvTok = 0;
+async function startPreview() {
+  audio(); ctx.resume(); const B = beat(), tok = ++pvTok, sd = 60 / S.bpm / 4;
+  pvTimer = -1; $('bPlay').textContent = '…';
+  let t0, len;
+  if (B.src) {
+    let buf; try { buf = await loadBeat(B); } catch (e) { if (tok === pvTok) stopPreview(); return; }
+    if (tok !== pvTok) return;
+    t0 = ctx.currentTime + .05; len = buf.duration - sd * 32; pvNode = playBuffer(buf, t0, sd * 32); pvNode.src.onended = () => { if (tok === pvTok) stopPreview(); };
+    pvTimer = -2;
+  } else {
+    t0 = ctx.currentTime + .1; len = sd * 64; let step = 0;
+    const tick = () => { while (t0 + step * sd < ctx.currentTime + .15) { const i = step % 16; full(B, i, t0 + step * sd + (i % 2 ? B.swing * sd : 0), step >> 4, sd); step++; } };
+    pvTimer = setInterval(tick, 40); tick();
+  }
+  $('bPlay').textContent = '⏸';
+  const draw = () => { pvRaf = requestAnimationFrame(draw); $('bProg').style.width = (((ctx.currentTime - t0) / len) % 1) * 100 + '%'; }; draw();
+}
+function stopPreview() {
+  if (!pvTimer) return; pvTok++;
+  if (pvTimer > 0) clearInterval(pvTimer); if (pvNode) { pvNode.src.onended = null; pvNode.stop(); pvNode = null; }
+  cancelAnimationFrame(pvRaf); pvTimer = 0; $('bPlay').textContent = '▶'; $('bProg').style.width = '0';
+}
 $('bPlay').onclick = () => pvTimer ? stopPreview() : startPreview();
 
-/* ---------- Déroulé d'une manche : par joueur, 2 mesures de décompte puis 4 mesures ---------- */
-const PREP = 8, VERSE = 16, TURN = PREP + VERSE, ROUND = TURN * 2;
-let G = null, raf = 0, timer = 0;
+/* ---------- Déroulé d'un clash : 2 mesures de décompte, puis une seule instru continue.
+   Le micro change de main toutes les 4 mesures, sans coupure. ---------- */
+const PREP = 8;
+let G = null, raf = 0, timer = 0, starter = 0;
 function schedule() {
-  const B = beat(), sd = 60 / S.bpm / 4;
-  while (G.step <= ROUND * 4 && G.t0 + G.step * sd < ctx.currentTime + .15) {
-    const st = G.step, i = st % 16; let t = G.t0 + st * sd; if (i % 2) t += B.swing * sd;
-    if (st === ROUND * 4) { kick(t); nz(t, .3, .9, 'highpass', 5000); G.step++; break; }
-    const local = (st / 4) % TURN;
-    if (local < PREP) { if (i % 4 === 0) kick(t, .7); if (i % 4 === 2) hat(t); if (local >= 4 && i % 4 === 0) tone(t, 880, .09, 'square', .09, 3000); }
-    else full(B, i, t, Math.floor((local - PREP) / 4), sd);
+  const B = beat(), sd = 60 / S.bpm / 4, end = G.total * 4;
+  while (G.step <= end && G.t0 + G.step * sd < ctx.currentTime + .15) {
+    const st = G.step, i = st % 16; let t = G.t0 + st * sd;
+    if (st === end) { if (B.src) G.node.stop(t, .6); else { kick(t); nz(t, .3, .9, 'highpass', 5000); } G.step++; break; }
+    const local = st / 4;
+    if (local < PREP) {
+      if (!B.src) { if (i % 4 === 0) kick(t, .7); if (i % 4 === 2) hat(t); }
+      if (local >= 4 && i % 4 === 0) tone(t, 880, .09, 'square', .09, 3000);
+    } else if (!B.src) full(B, i, t + (i % 2 ? B.swing * sd : 0), Math.floor((local - PREP) / 4), sd);
     G.step++;
   }
 }
-function buildGrid(turn) {
-  const grid = $('grid'); grid.querySelectorAll('.row').forEach(r => r.remove());
+function buildGrid() {
+  const track = $('track'), nm = names(); track.querySelectorAll('.row,.th').forEach(r => r.remove());
   const row = (cls, n) => { const r = document.createElement('div'); r.className = 'row ' + cls; r.innerHTML = `<span class="num">${n}</span><div class="cell"></div><div class="cell"></div><div class="cell"></div>`; return r; };
-  const c = row('cnt', '-2'); c.insertAdjacentHTML('beforeend', '<div class="cell"></div><span class="num">-2</span>'); grid.appendChild(c);
-  turn.words.forEach((_, i) => { const r = row('', i + 1); r.appendChild(wordCell(turn.words, i)); r.insertAdjacentHTML('beforeend', `<span class="num">${i + 1}</span>`); grid.appendChild(r); });
-  G.cnt = [...c.querySelectorAll('.cell')]; G.cntNum = [...c.querySelectorAll('.num')];
-  G.rows = [...grid.querySelectorAll('.row:not(.cnt)')]; G.cells = G.rows.flatMap(r => [...r.querySelectorAll('.cell')]);
-  G.path = [...G.cnt, ...G.cnt, ...G.cells];           // une case par temps : 8 de décompte, 16 de couplet
-  measure();
+  const c = row('cnt', '-2'); c.insertAdjacentHTML('beforeend', '<div class="cell"></div><span class="num">-2</span>'); track.appendChild(c);
+  G.rows = [];
+  G.turns.forEach(turn => {
+    const h = document.createElement('div'), s = document.createElement('small'); h.className = 'th p' + turn.p; h.textContent = nm[turn.p]; s.textContent = turn.angle ? 'angle : ' + turn.angle : ''; h.appendChild(s); track.appendChild(h);
+    turn.words.forEach((_, i) => { const r = row('p' + turn.p, i + 1); r.appendChild(wordCell(turn.words, i)); r.insertAdjacentHTML('beforeend', `<span class="num">${i + 1}</span>`); track.appendChild(r); G.rows.push(r); });
+  });
+  G.cntRow = c; G.cnt = [...c.querySelectorAll('.cell')]; G.cntNum = [...c.querySelectorAll('.num')];
+  G.path = [...G.cnt, ...G.cnt, ...G.rows.flatMap(r => [...r.querySelectorAll('.cell')])];   // une case par temps
+  track.style.transform = 'none'; measure();
 }
-function measure() {
+function measure() {   // positions dans le repère de la piste, qui défile
   if (!G || !G.path) return;
-  const g = $('grid').getBoundingClientRect();
-  G.pts = G.path.map(c => { const r = c.getBoundingClientRect(); return { x: r.left + r.width / 2 - g.left, y: r.top - g.top + (c.classList.contains('word') ? 10 : r.height / 2 + 6) }; });   // la balle se pose dans la case, sur le bord du mot
+  G.pts = G.path.map(c => ({ x: c.offsetLeft + c.offsetWidth / 2, y: c.offsetTop + (c.classList.contains('word') ? 10 : c.offsetHeight / 2 + 6) }));
 }
 new ResizeObserver(measure).observe($('grid'));
 function setTurn(ti) {
-  G.ti = ti; G.last = -1;
-  const turn = G.turns[ti], nm = names();
+  G.ti = ti; const turn = G.turns[ti], nm = names(), next = G.turns[ti + 1];
   $('game').dataset.p = turn.p;
   $('sideA').classList.toggle('on', turn.p === 0); $('sideB').classList.toggle('on', turn.p === 1);
   $('who').textContent = nm[turn.p];
-  $('angle').innerHTML = turn.angle ? 'Angle d\'attaque : <b></b>' : '';
-  if (turn.angle) $('angle').querySelector('b').textContent = turn.angle;
-  buildGrid(turn);
+  $('angle').textContent = next ? 'Ensuite : ' + nm[next.p] : 'Dernier passage';
 }
 function frame() {
   raf = requestAnimationFrame(frame);
   const beatPos = (ctx.currentTime - G.t0) / (60 / S.bpm);
-  if (beatPos >= ROUND) return endRound();
+  if (beatPos >= G.total) return endClash();
   if (beatPos < 0) return;
-  $('gProg').style.width = beatPos / ROUND * 100 + '%';
-  const ti = beatPos < TURN ? 0 : 1; if (ti !== G.ti) setTurn(ti);
-  const local = beatPos - ti * TURN, b = Math.floor(local), u = local - b, vb = b - PREP;
-  const txt = vb < -4 ? 'Prépare-toi' : vb < 0 ? 'Dans ' + (-vb) : 'Phrase ' + ((vb >> 2) + 1) + ' / 4';
+  $('gProg').style.width = beatPos / G.total * 100 + '%';
+  const b = Math.floor(beatPos), u = beatPos - b, vb = b - PREP, bar = vb >> 2;
+  const txt = vb < -4 ? 'Prépare-toi' : vb < 0 ? 'Dans ' + (-vb) : 'Mesure ' + (bar + 1) + ' / ' + G.bars;
   if (txt !== G.txt) $('state').textContent = G.txt = txt;
-  const P = G.pts, from = P[b], to = P[Math.min(TURN - 1, b + 1)];
+  const P = G.pts, from = P[b], to = P[Math.min(G.total - 1, b + 1)];
   const h = (to.y !== from.y || to.x < from.x ? 50 : 34) * 4 * u * (1 - u);
   $('ball').style.transform = `translate(${from.x + (to.x - from.x) * u}px,${from.y + (to.y - from.y) * u - h}px)`;
-  if (b !== G.last) {
-    G.last = b;
-    G.path.forEach(c => c.classList.remove('on'));
-    const c = G.path[b]; if (c.classList.contains('word')) { c.classList.remove('landed'); void c.offsetWidth; c.classList.add('landed'); } else c.classList.add('on');
-    G.cntNum.forEach(n => n.textContent = vb < -4 ? '-2' : '-1');
-    const cur = vb < 0 ? 0 : vb >> 2;
-    G.rows.forEach((r, i) => { r.classList.toggle('done', vb >= 0 && i < cur); r.classList.toggle('next', i === cur + 1); r.classList.toggle('far', i > cur + 1); });
-    G.cnt[0].parentNode.classList.toggle('done', vb >= 0);
-  }
+  if (b === G.last) return;
+  if (G.last >= 0) G.path[G.last].classList.remove('on');
+  G.last = b;
+  const c = G.path[b]; if (c.classList.contains('word')) { c.classList.remove('landed'); void c.offsetWidth; c.classList.add('landed'); } else c.classList.add('on');
+  if (vb < 0) { G.cntNum.forEach(n => n.textContent = vb < -4 ? '-2' : '-1'); return; }
+  if (bar === G.bar) return;
+  G.bar = bar; const ti = bar >> 2; if (ti !== G.ti) setTurn(ti);
+  G.cntRow.style.opacity = .25;
+  for (let i = Math.max(0, bar - 2); i < Math.min(G.rows.length, bar + 8); i++) G.rows[i].style.opacity = i < bar ? .25 : [1, .9, .75, .6][i - bar] || .5;
+  $('track').style.transform = `translateY(${-Math.max(0, G.rows[bar].offsetTop - 96)}px)`;   // la mesure en cours reste en haut, les suivantes montent
 }
-function startRound() {
+async function newGame() {
+  if (G && G.loading) return;
   stopPreview(); audio(); ctx.resume();
-  const first = G.round % 2, mk = p => ({ p, words: pickWords(), angle: S.angle === '1' ? draw(angDeck, ANGLES) : '' });
-  G.turns = [mk(first), mk(1 - first)]; G.log.push(...G.turns);
-  const nm = names(), B = beat();
-  $('gA').textContent = nm[0]; $('gB').textContent = nm[1]; $('sA').textContent = G.score[0]; $('sB').textContent = G.score[1];
-  $('roundLab').textContent = G.decider ? 'Décisive' : 'Manche ' + (G.round + 1) + '/' + G.total;
-  art($('gArt'), B); $('gT').textContent = B.n; $('gS').textContent = S.bpm + ' BPM · ' + B.g;
-  $('pause').textContent = '⏸'; G.txt = ''; $('gProg').style.width = '0';
-  show('game');
-  G.t0 = ctx.currentTime + .25; G.step = 0;
-  setTurn(0);
+  const B = beat(), bars = +S.bars; let buf = null;
+  G = { loading: true };
+  if (B.src) {
+    $('start').textContent = 'Chargement…';
+    try { buf = await loadBeat(B); } catch (e) { G = null; $('start').textContent = 'Instru indisponible, réessaie'; setTimeout(() => $('start').textContent = 'Play', 2500); return; }
+    $('start').textContent = 'Play';
+  }
+  G = { bars, total: PREP + bars * 4, log: [], last: -1, bar: -1, ti: -1, txt: '', step: 0 };
+  G.turns = Array.from({ length: bars / 4 }, (_, i) => ({ p: (starter + i) % 2, words: pickWords(), angle: S.angle === '1' ? draw(angDeck, ANGLES) : '' }));
+  G.log = G.turns;
+  const nm = names();
+  $('gA').textContent = nm[0]; $('gB').textContent = nm[1]; $('roundLab').textContent = bars + ' mesures';
+  art($('gArt'), B); $('gT').textContent = B.n; $('gS').textContent = B.a + ' · ' + Math.round(S.bpm) + ' BPM';
+  $('pause').textContent = '⏸'; $('gProg').style.width = '0';
+  show('game'); buildGrid(); setTurn(0);
+  G.t0 = ctx.currentTime + .3;
+  if (buf) G.node = playBuffer(buf, G.t0, 0);
   clearInterval(timer); timer = setInterval(schedule, 40); schedule();
   cancelAnimationFrame(raf); raf = requestAnimationFrame(frame);
   try { navigator.wakeLock && navigator.wakeLock.request('screen').catch(() => {}); } catch (e) {}
 }
-function stopLoop() { cancelAnimationFrame(raf); clearInterval(timer); }
-function endRound() {
-  stopLoop();
-  const nm = names(), by = p => G.turns.find(t => t.p === p).words.map(o => o.w).join(' · ');
-  $('voteLab').textContent = G.decider ? 'Manche décisive' : 'Manche ' + (G.round + 1) + ' / ' + G.total;
-  $('vA').textContent = nm[0]; $('vB').textContent = nm[1]; $('vAw').textContent = by(0); $('vBw').textContent = by(1);
-  setTimeout(() => show('vote'), 450);
+function stopLoop() { cancelAnimationFrame(raf); clearInterval(timer); if (G && G.node) G.node.stop(); }
+function endClash() {
+  cancelAnimationFrame(raf); clearInterval(timer);
+  const nm = names(), n = G.bars / 8;
+  $('voteLab').textContent = G.bars + ' mesures · ' + beat().n;
+  $('vA').textContent = nm[0]; $('vB').textContent = nm[1]; $('vAw').textContent = $('vBw').textContent = n + (n > 1 ? ' passages' : ' passage') + ' de 4 mesures';
+  setTimeout(() => show('vote'), 700);
 }
 $('vote').addEventListener('click', e => {
   const b = e.target.closest('[data-w]'); if (!b) return;
-  const w = +b.dataset.w; if (w < 0) { G.score[0]++; G.score[1]++; } else G.score[w]++;
-  G.round++;
-  if (G.round < G.total) return startRound();
-  const nm = names(), [a, c] = G.score, t = $('endTitle');
-  $('eA').textContent = nm[0] + ' ' + a; $('eB').textContent = nm[1] + ' ' + c;
+  const w = +b.dataset.w, nm = names(), t = $('endTitle'); G.score = w < 0 ? [1, 1] : w === 0 ? [1, 0] : [0, 1];
   t.textContent = '';
-  if (a === c) { t.textContent = 'Égalité parfaite'; $('again').textContent = 'Manche décisive'; $('end').style.removeProperty('--wc'); }
-  else { const s = document.createElement('span'); s.textContent = nm[a > c ? 0 : 1]; t.append(s, ' remporte le clash'); $('again').textContent = 'Revanche'; $('end').style.setProperty('--wc', a > c ? 'var(--rouge)' : 'var(--bleu)'); saveClash(); }
+  if (w < 0) { t.textContent = 'Égalité parfaite'; $('end').style.removeProperty('--wc'); }
+  else { const s = document.createElement('span'); s.textContent = nm[w]; t.append(s, ' remporte le clash'); $('end').style.setProperty('--wc', w === 0 ? 'var(--rouge)' : 'var(--bleu)'); }
   $('endWords').replaceChildren(...G.log.flatMap(tn => tn.words).map(o => { const x = document.createElement('button'); x.type = 'button'; x.className = 'chip k' + o.k; x.textContent = o.w; x.onclick = () => openDico(o.w, 'end'); return x; }));
-  show('end');
+  saveClash(); show('end');
 });
-function newGame() { G = { round: 0, total: +S.rounds, score: [0, 0], log: [] }; startRound(); }
-$('start').onclick = newGame;
-$('again').onclick = () => { if (G.score[0] === G.score[1]) { G.total++; G.decider = true; startRound(); } else newGame(); };
-$('back').onclick = () => { saveClash(); show('home'); };
-$('quit').onclick = () => { stopLoop(); ctx && ctx.suspend(); show('setup'); };
+$('start').onclick = () => { starter = 0; newGame(); };
+$('again').onclick = () => { starter = 1 - starter; newGame(); };
+$('back').onclick = () => show('home');
+$('quit').onclick = () => { stopLoop(); G = null; show('setup'); };
 $('pause').onclick = () => { if (ctx.state === 'running') { ctx.suspend(); $('pause').textContent = '▶'; $('state').textContent = G.txt = 'Pause'; } else { ctx.resume(); $('pause').textContent = '⏸'; } };
 
 /* ---------- Dictionnaire de rimes ---------- */
@@ -628,7 +676,7 @@ async function openProfile() {
     if (me && !p.user) setMe(null);
     const st = p.stats || { clashs: 0, victoires: 0, serie: 0, record: 0 }, hist = p.history || [];
     $('stC').textContent = st.clashs; $('stV').textContent = st.victoires; $('stS').textContent = st.serie || 0; $('stR').textContent = st.record || 0;
-    $('hist').replaceChildren(...hist.map(h => li(h.result, h.result, 'contre ' + h.opponent, h.my_score + ' – ' + h.their_score)));
+    $('hist').replaceChildren(...hist.map(h => li(h.result, h.result, 'contre ' + h.opponent, new Date(h.created_at * 1000).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' }))));
     if (!hist.length) $('hist').innerHTML = me ? '<p class="empty">Aucun clash enregistré pour l\'instant. Lance le premier.</p>' : '<p class="empty">Connecte-toi depuis l\'accueil pour enregistrer tes clashs et ta série.</p>';
     $('board').replaceChildren(...b.leaderboard.map((r, i) => li(me && r.pseudo === me.pseudo ? 'me' : '', i + 1, r.pseudo, r.victoires + ' V / ' + r.clashs)));
     if (!b.leaderboard.length) $('board').innerHTML = '<p class="empty">Le classement est vide. La première place est à prendre.</p>';
@@ -636,7 +684,7 @@ async function openProfile() {
 }
 $('tProfile').onclick = openProfile;
 function saveClash() {
-  if (!me || !G || G.saved) return; G.saved = true;
+  if (!me || !G || !G.score || G.saved) return; G.saved = true;
   call('/api/clashes', { opponent: names()[1], myScore: G.score[0], theirScore: G.score[1] }).catch(() => { G.saved = false; });
 }
 sync();

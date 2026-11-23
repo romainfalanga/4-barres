@@ -2,8 +2,8 @@
   "name": "4-barres",
   "main": "src/worker.js",
   "compatibility_date": "2026-10-01",
-  // La page est embarquée dans le Worker (import texte) : un seul déploiement, pas de dossier d'assets.
-  "rules": [{ "type": "Text", "globs": ["**/*.html"], "fallthrough": true }],
+  // public/ contient la page et les instrus ; le Worker ne traite que /api/*.
+  "assets": { "directory": "./public", "binding": "ASSETS" },
   "d1_databases": [
     { "binding": "DB", "database_name": "4-barres", "database_id": "d51052d8-64fb-4f1c-b4a5-03852aab9942" }
   ],

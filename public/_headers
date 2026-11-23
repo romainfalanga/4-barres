@@ -1,0 +1,7 @@
+/*
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+  Referrer-Policy: same-origin
+
+/beats/*
+  Cache-Control: public, max-age=2592000

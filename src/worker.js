@@ -1,5 +1,3 @@
-import page from '../public/index.html';
-
 // API de 4 Barres : comptes (pseudo + mot de passe), sessions par cookie, historique et classement.
 const enc = new TextEncoder();
 const DAY = 86400, SESSION_DAYS = 30;
@@ -104,11 +102,7 @@ async function api(req, env, path) {
 export default {
   async fetch(req, env) {
     const { pathname } = new URL(req.url);
-    if (!pathname.startsWith('/api/')) {
-      if (pathname !== '/' && pathname !== '/index.html') return new Response('Page introuvable', { status: 404 });
-      return new Response(page, { headers: { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-cache',
-        'x-content-type-options': 'nosniff', 'x-frame-options': 'DENY', 'referrer-policy': 'same-origin' } });
-    }
+    if (!pathname.startsWith('/api/')) return env.ASSETS.fetch(req);   // page et instrus : fichiers statiques de public/
     try { return await api(req, env, pathname); }
     catch (e) { console.error(e); return fail(500, 'Erreur serveur, réessaie dans un instant.'); }
   }
