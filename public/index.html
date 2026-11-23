@@ -73,6 +73,8 @@ button{cursor:pointer;-webkit-tap-highlight-color:transparent}
   font:400 clamp(.95rem,4.3vw,1.45rem)/1 var(--display);text-transform:uppercase;letter-spacing:.01em;text-align:center;overflow:hidden;overflow-wrap:anywhere}
 .pv .cell.word{font-size:clamp(.8rem,3.4vw,1.05rem)}
 .cell.word::after{content:none}
+.cell.word.lg{font-size:clamp(.72rem,3.3vw,1.1rem);overflow-wrap:normal} .cell.word.xl{font-size:clamp(.58rem,2.6vw,.9rem);overflow-wrap:normal}
+.pv .cell.word.lg{font-size:clamp(.66rem,2.9vw,.9rem)} .pv .cell.word.xl{font-size:clamp(.55rem,2.3vw,.78rem)}
 .cell.word.kb{--rc:var(--rose)}
 .cell.word.mute{background:transparent;color:var(--rc);border-style:dashed}
 .cell.word.landed{animation:land .3s}
@@ -178,6 +180,21 @@ dialog h2{font:400 2rem/1 var(--display);text-transform:uppercase;margin:0}
 .field{display:flex;flex-direction:column;gap:6px}
 .field input{background:var(--nuit);border:1px solid var(--corde);border-radius:10px;padding:11px 12px;font-size:1rem;width:100%}
 .err{color:var(--rouge);margin:0;font-weight:600;min-height:1.4em}
+#online,#wait{gap:14px}
+#wait{justify-content:center;text-align:center;gap:18px}
+.addf{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px}
+.msg{margin:0;min-height:1.4em;color:var(--craie-2);font-size:.92rem}
+.sec{display:flex;flex-direction:column;gap:4px}
+.prow{display:flex;align-items:center;gap:8px;padding:10px 0;border-bottom:1px solid var(--corde)}
+.prow:last-child{border-bottom:0}
+.prow b{flex:1;min-width:0;font:400 1.15rem/1.1 var(--display);text-transform:uppercase;letter-spacing:.02em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.prow small{display:block;font:400 .82rem/1.3 var(--body);text-transform:none;letter-spacing:0;color:var(--craie-2);white-space:normal}
+.mini{border:0;border-radius:8px;padding:9px 12px;font:600 .9rem/1 var(--body);background:var(--spot);color:var(--encre);white-space:nowrap}
+.mini.no{background:transparent;border:1px solid var(--corde);color:var(--craie-2)}
+.invite{border-color:var(--spot)}
+.count{font:400 5rem/1 var(--display);color:var(--spot);font-variant-numeric:tabular-nums;min-height:5rem}
+.play.alt{background:var(--ring);color:var(--craie);border:2px solid var(--bleu);box-shadow:0 5px 0 #1d6f93;font-size:1.5rem;padding:15px 20px}
+.play.alt:active{box-shadow:0 1px 0 #1d6f93}
 @media (prefers-reduced-motion:reduce){.cell.word.landed{animation:none}.play{transition:none}}
 </style>
 </head>
@@ -187,6 +204,7 @@ dialog h2{font:400 2rem/1 var(--display);text-transform:uppercase;margin:0}
   <h1 class="logo" aria-label="4 Barres"><span class="l1">Le clash</span><span class="l2">4 Barres</span><span class="l3">en impro</span></h1>
   <p class="tag">Une instru, quatre phrases chacun, le dernier mot est imposé.</p>
   <button class="play" id="goSetup" type="button">Jouer</button>
+  <button class="play alt" id="goOnline" type="button">Jouer en ligne avec un ami</button>
   <div class="tiles">
     <button class="tile" id="tDico" type="button">Dictionnaire de rimes<small>Trouve ce qui rime avec un mot</small></button>
     <button class="tile" id="tProfile" type="button">Stats et classement<small>Tes clashs, ta série, le top</small></button>
@@ -199,7 +217,7 @@ dialog h2{font:400 2rem/1 var(--display);text-transform:uppercase;margin:0}
 </main>
 
 <main id="setup" class="screen" hidden>
-  <div class="top"><button class="backb" type="button" data-go="home" aria-label="Retour">‹</button><h2>Prépare ton clash</h2><span></span></div>
+  <div class="top"><button class="backb" type="button" id="setupBack" aria-label="Retour">‹</button><h2 id="setupT">Prépare ton clash</h2><span></span></div>
   <div class="gridbox pv"><div class="grid" id="pv"></div></div>
   <button class="link" type="button" id="advT">Réglages avancés ›</button>
   <div class="card adv" id="adv" hidden>
@@ -209,6 +227,9 @@ dialog h2{font:400 2rem/1 var(--display);text-transform:uppercase;margin:0}
       <button type="button" data-v="all">Tous</button><button type="button" data-v="first">Le premier</button><button type="button" data-v="last">Le dernier</button><button type="button" data-v="none">Aucun</button></div></div>
     <div class="opt"><span class="lab">Angle d'attaque</span><div class="seg" data-k="angle">
       <button type="button" data-v="1">Tiré au sort</button><button type="button" data-v="0">Libre</button></div></div>
+    <div class="opt"><span class="lab">Synchro balle / son</span>
+      <div class="tempo"><button type="button" id="syDown" aria-label="Balle plus tôt">−</button><output id="sy">0</output><span class="lab">ms</span><button type="button" id="syUp" aria-label="Balle plus tard">+</button></div>
+      <div class="sub" style="font-size:.82rem;color:var(--craie-2)">Si la balle tombe avant le son (casque Bluetooth), augmente. Si elle tombe après, diminue.</div></div>
     <div class="opt" id="tempoOpt"><span class="lab">Tempo (instrus synthé)</span>
       <div class="tempo"><button type="button" id="bpmDown" aria-label="Ralentir">−</button><output id="bpm">90</output><span class="lab">BPM</span><button type="button" id="bpmUp" aria-label="Accélérer">+</button></div></div>
   </div>
@@ -267,6 +288,27 @@ dialog h2{font:400 2rem/1 var(--display);text-transform:uppercase;margin:0}
   <h2 class="big" id="endTitle"></h2>
   <div class="card" style="display:flex;flex-direction:column;gap:10px"><span class="lab">Les mots du clash · touche un mot pour voir ses rimes</span><div class="chips" id="endWords"></div></div>
   <div class="actions"><button class="play" id="again" type="button">Revanche</button><button class="ghost" id="back" type="button">Retour à l'accueil</button></div>
+</main>
+
+<main id="online" class="screen" hidden>
+  <div class="top"><button class="backb" type="button" data-go="home" aria-label="Retour">‹</button><h2>Jouer en ligne</h2><span></span></div>
+  <p class="msg" style="color:var(--craie)">Défie un ami : vous verrez les mêmes mots au même instant, chacun sur son appareil. Pour vous entendre, appelez-vous en parallèle, avec des écouteurs.</p>
+  <section class="card sec invite" id="invBox" hidden><span class="lab">Défis reçus</span><div id="invites"></div></section>
+  <section class="card sec"><span class="lab">Ajouter un ami</span>
+    <form class="addf" id="addF"><input class="search" id="addP" placeholder="Son pseudo" maxlength="14" autocomplete="off" autocapitalize="off" required><button class="mini" type="submit">Ajouter</button></form>
+    <p class="msg" id="addMsg" role="status"></p></section>
+  <section class="card sec" id="reqBox" hidden><span class="lab">Demandes d'amis reçues</span><div id="requests"></div></section>
+  <section class="card sec"><span class="lab">Mes amis</span><div id="friends"></div></section>
+  <section class="card sec" id="sentBox" hidden><span class="lab">Demandes envoyées</span><div id="sent"></div></section>
+  <p class="msg" id="lobbyMsg"></p>
+</main>
+
+<main id="wait" class="screen" hidden>
+  <div class="lab" id="waitLab">Défi en ligne</div>
+  <h2 class="big" id="waitT"></h2>
+  <div class="count" id="waitC"></div>
+  <p class="msg" id="waitS"></p>
+  <button class="ghost" type="button" id="waitX">Annuler</button>
 </main>
 
 <main id="profile" class="screen" hidden>
@@ -361,45 +403,51 @@ const DIFFS = [
   { id: 'exp', n: 'Expert', s: 'Quatre fois la même rime · AAAA', c: 'var(--rouge)', fill: 'last', scheme: 'AAAA' }
 ];
 const BEATS = [
-  // Vraies instrus, licence CC0 (domaine public). Chaque fichier commence 2 mesures avant le couplet.
+  // Vraies instrus, licence CC0 (domaine public). Chaque fichier commence sur un premier temps, 2 mesures avant l'entrée de la batterie.
   { id: 'tension', n: 'Tension In The Air', a: 'HoliznaCC0', g: 'Hip-hop', c: 'var(--rouge)', bpm: 90, src: '/beats/tension.mp3', max: 64 },
   { id: 'abducted', n: 'Abducted', a: 'HoliznaCC0', g: 'Hip-hop', c: 'var(--orange)', bpm: 95, src: '/beats/abducted.mp3', max: 64 },
   { id: 'shadow', n: 'Shadow Self', a: 'HoliznaCC0', g: 'Hip-hop', c: 'var(--craie)', bpm: 95, src: '/beats/shadow.mp3', max: 64 },
-  { id: 'cobwebs', n: 'CobWebs', a: 'HoliznaCC0', g: 'Hip-hop', c: 'var(--vert)', bpm: 89.978, src: '/beats/cobwebs.mp3', max: 32 },
+  { id: 'cobwebs', n: 'CobWebs', a: 'HoliznaCC0', g: 'Hip-hop', c: 'var(--vert)', bpm: 89.98, src: '/beats/cobwebs.mp3', max: 32 },
   { id: 'mystery', n: 'Mystery Go Brrrr', a: 'Fupi', g: 'Beat', c: 'var(--bleu)', bpm: 80, src: '/beats/mystery.mp3', max: 32 },
   { id: 'boombap', n: 'Pavé', a: 'Synthé maison', g: 'Boom bap', max: 64, c: 'var(--spot)', bpm: 90, swing: .14, k: 'x.....x...x.....', s: '....x.......x...', h: 'x.x.x.x.x.x.x.x.', st: 'x.....x.........', roots: [55, 55, 43.65, 49] },
   { id: 'oldschool', n: 'Platine', a: 'Synthé maison', g: 'Old school', max: 64, c: 'var(--vert)', bpm: 104, swing: 0, k: 'x..x..x...x.x...', s: '....x.......x...', h: 'xxxxxxxxxxxxxxxx', st: '..x...x...x.....', roots: [61.74, 61.74, 73.42, 55] },
   { id: 'trap', n: 'Néon', a: 'Synthé maison', g: 'Trap', max: 64, c: 'var(--rose)', bpm: 72, swing: 0, k: 'x.....x......x..', s: '........x.......', h: 'xxxxxxrxxxxxxrxr', st: 'x...............', roots: [46.25, 46.25, 36.71, 41.2] },
   { id: 'drill', n: 'Brume', a: 'Synthé maison', g: 'Drill', max: 64, c: 'var(--bleu)', bpm: 72, swing: 0, k: 'x..x......x..x..', s: '........x.....x.', h: 'x.x.x..x.x.x..x.', st: 'x.....x.....x...', roots: [51.91, 51.91, 46.25, 38.89] }
 ];
-const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.random() * (i + 1) | 0; [a[i], a[j]] = [a[j], a[i]]; } return a; };
+// Hasard : Math.random en local, générateur à graine pour un défi en ligne (mêmes mots sur les deux appareils).
+let rnd = Math.random;
+function seeded(seed) { let a = seed >>> 0; return () => { a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+function setRandom(seed) { rnd = seed == null ? Math.random : seeded(seed); famDeck = []; angDeck = []; }
+const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = rnd() * (i + 1) | 0; [a[i], a[j]] = [a[j], a[i]]; } return a; };
 let famDeck = [], angDeck = [];
 const draw = (deck, src) => { if (!deck.length) deck.push(...shuffle(src)); return deck.pop(); };
-function pickWords() {
-  const fams = LISTS.find(l => l.id === S.list).f, fam = () => shuffle(FAM[draw(famDeck, fams)]);
-  if (S.scheme === 'AAAA') return fam().slice(0, 4).map(w => ({ w, k: 'a' }));
+function pickWords() {      // C = réglages actifs : ceux de l'écran de préparation, ou ceux du clash en cours
+  const fams = LISTS.find(l => l.id === C.list).f, fam = () => shuffle(FAM[draw(famDeck, fams)]);
+  if (C.scheme === 'AAAA') return fam().slice(0, 4).map(w => ({ w, k: 'a' }));
   const a = fam(), b = fam(); let ia = 0, ib = 0;
-  return [...S.scheme].map(c => c === 'A' ? { w: a[ia++], k: 'a' } : { w: b[ib++], k: 'b' });
+  return [...C.scheme].map(c => c === 'A' ? { w: a[ia++], k: 'a' } : { w: b[ib++], k: 'b' });
 }
 function shown(words, i) {           // mode d'affichage : quels mots sont donnés au joueur
-  if (S.fill === 'all') return true; if (S.fill === 'none') return false;
+  if (C.fill === 'all') return true; if (C.fill === 'none') return false;
   const same = words.map((o, j) => o.k === words[i].k ? j : -1).filter(j => j >= 0);
-  return i === (S.fill === 'first' ? same[0] : same[same.length - 1]);
+  return i === (C.fill === 'first' ? same[0] : same[same.length - 1]);
 }
 function wordCell(words, i) {
   const c = document.createElement('div'), o = words[i], ok = shown(words, i);
-  c.className = 'cell word k' + o.k + (ok ? '' : ' mute'); c.textContent = ok ? o.w : '?'; return c;
+  c.className = 'cell word k' + o.k + (ok ? '' : ' mute') + (ok && o.w.length > 10 ? ' xl' : ok && o.w.length > 7 ? ' lg' : ''); c.textContent = ok ? o.w : '?'; return c;
 }
 
 /* ---------- Réglages ---------- */
-let me = null, mode = 'login';
-let S = { n1: '', n2: '', bars: '16', beat: 'tension', bpm: 90, diff: 'deb', scheme: 'AABB', fill: 'all', list: 'mix', angle: '1', adv: false };
+let me = null, mode = 'login', rival = '';     // rival : ami défié en ligne (vide = partie sur un seul écran)
+let S = { n1: '', n2: '', bars: '16', beat: 'tension', bpm: 90, diff: 'deb', scheme: 'AABB', fill: 'all', list: 'mix', angle: '1', adv: false, sync: 0 };
+let C = S;
 try { Object.assign(S, JSON.parse(localStorage.getItem('4barres3') || '{}')); } catch (e) {}
 const save = () => { try { localStorage.setItem('4barres3', JSON.stringify(S)); } catch (e) {} };
 const beat = () => BEATS.find(b => b.id === S.beat) || BEATS[0];
+const cfgOf = () => ({ bars: +S.bars, beat: S.beat, bpm: S.bpm, scheme: S.scheme, fill: S.fill, list: S.list, angle: S.angle });
 const names = () => [me ? me.pseudo : S.n1.trim() || 'Joueur 1', S.n2.trim() || 'Joueur 2'];
 function preview() {
-  const words = pickWords(), pv = $('pv'); pv.replaceChildren();
+  C = S; const words = pickWords(), pv = $('pv'); pv.replaceChildren();
   words.forEach((_, i) => { const r = document.createElement('div'); r.className = 'row'; r.innerHTML = '<div class="cell"></div><div class="cell"></div><div class="cell"></div>'; r.appendChild(wordCell(words, i)); pv.appendChild(r); });
 }
 function art(el, b) { el.style.setProperty('--ac', b.c); el.textContent = b.n.slice(0, 2).toUpperCase(); }
@@ -416,7 +464,9 @@ function sync(redraw = true) {
   $('lenS').textContent = `${turns} passages de 4 mesures, ${turns / 2} chacun · environ ${Math.floor(sec / 60)} min ${String(sec % 60).padStart(2, '0')}` + (b.max < 64 ? ' · cette instru va jusqu\'à ' + b.max + ' mesures' : '');
   $('tempoOpt').hidden = !!b.src;
   document.querySelectorAll('.seg').forEach(g => g.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', String(x.dataset.v === String(S[g.dataset.k])))));
-  $('bpm').textContent = Math.round(S.bpm); $('n1').value = me ? me.pseudo : S.n1; $('n1').readOnly = !!me; $('n2').value = S.n2;
+  $('bpm').textContent = Math.round(S.bpm); $('sy').textContent = (S.sync > 0 ? '+' : '') + S.sync;
+  $('n1').value = me ? me.pseudo : S.n1; $('n1').readOnly = !!me; $('n2').value = rival || S.n2; $('n2').readOnly = !!rival;
+  $('setupT').textContent = rival ? 'Défie ' + rival : 'Prépare ton clash'; $('start').textContent = rival ? 'Inviter ' + rival : 'Play';
   $('adv').hidden = !S.adv; $('advT').textContent = S.adv ? 'Masquer les réglages avancés ‹' : 'Réglages avancés ›';
   save(); if (redraw) preview();
 }
@@ -433,12 +483,15 @@ const bump = d => { if (beat().src) return; S.bpm = Math.max(60, Math.min(130, S
 $('bpmDown').onclick = () => bump(-4); $('bpmUp').onclick = () => bump(4);
 $('advT').onclick = () => { S.adv = !S.adv; sync(false); };
 $('pv').onclick = preview;
-$('n1').oninput = e => { if (me) return; S.n1 = e.target.value; save(); }; $('n2').oninput = e => { S.n2 = e.target.value; save(); };
+$('n1').oninput = e => { if (me) return; S.n1 = e.target.value; save(); }; $('n2').oninput = e => { if (rival) return; S.n2 = e.target.value; save(); };
+const nudge = d => { S.sync = Math.max(-300, Math.min(300, S.sync + d)); sync(false); };
+$('syDown').onclick = () => nudge(-20); $('syUp').onclick = () => nudge(20);
 
-const SCREENS = ['home', 'setup', 'game', 'vote', 'end', 'profile', 'dico'];
-function show(id) { if (id !== 'setup') stopPreview(); SCREENS.forEach(s => $(s).hidden = s !== id); window.scrollTo(0, 0); }
+const SCREENS = ['home', 'setup', 'game', 'vote', 'end', 'profile', 'dico', 'online', 'wait'];
+function show(id) { if (id !== 'setup') stopPreview(); if (id !== 'online') stopLobby(); SCREENS.forEach(s => $(s).hidden = s !== id); window.scrollTo(0, 0); }
 document.querySelectorAll('[data-go]').forEach(b => b.onclick = () => show(b.dataset.go));
-$('goSetup').onclick = () => { show('setup'); preview(); };
+$('goSetup').onclick = () => { rival = ''; show('setup'); sync(); };
+$('setupBack').onclick = () => rival ? openLobby() : show('home');
 
 /* ---------- Son : instru synthétisée ---------- */
 let ctx, master, noise;
@@ -509,11 +562,14 @@ $('bPlay').onclick = () => pvTimer ? stopPreview() : startPreview();
    Le micro change de main toutes les 4 mesures, sans coupure. ---------- */
 const PREP = 8;
 let G = null, raf = 0, timer = 0, starter = 0;
+// Horloge de l'image : le son programmé à l'instant T sort des haut-parleurs un peu après T (latence de sortie).
+const vnow = () => ctx.currentTime - (ctx.outputLatency || 0) - (ctx.baseLatency || 0) - S.sync / 1000;
 function schedule() {
-  const B = beat(), sd = 60 / S.bpm / 4, end = G.total * 4;
+  const B = G.B, sd = 60 / G.cfg.bpm / 4, end = G.total * 4;
   while (G.step <= end && G.t0 + G.step * sd < ctx.currentTime + .15) {
     const st = G.step, i = st % 16; let t = G.t0 + st * sd;
     if (st === end) { if (B.src) G.node.stop(t, .6); else { kick(t); nz(t, .3, .9, 'highpass', 5000); } G.step++; break; }
+    if (t < ctx.currentTime - .02) { G.step++; continue; }     // arrivée en retard sur un défi en ligne : on ne rejoue pas le passé
     const local = st / 4;
     if (local < PREP) {
       if (!B.src) { if (i % 4 === 0) kick(t, .7); if (i % 4 === 2) hat(t); }
@@ -523,7 +579,7 @@ function schedule() {
   }
 }
 function buildGrid() {
-  const track = $('track'), nm = names(); track.querySelectorAll('.row,.th').forEach(r => r.remove());
+  const track = $('track'), nm = G.names; track.querySelectorAll('.row,.th').forEach(r => r.remove());
   const row = (cls, n) => { const r = document.createElement('div'); r.className = 'row ' + cls; r.innerHTML = `<span class="num">${n}</span><div class="cell"></div><div class="cell"></div><div class="cell"></div>`; return r; };
   const c = row('cnt', '-2'); c.insertAdjacentHTML('beforeend', '<div class="cell"></div><span class="num">-2</span>'); track.appendChild(c);
   G.rows = [];
@@ -541,15 +597,15 @@ function measure() {   // positions dans le repère de la piste, qui défile
 }
 new ResizeObserver(measure).observe($('grid'));
 function setTurn(ti) {
-  G.ti = ti; const turn = G.turns[ti], nm = names(), next = G.turns[ti + 1];
+  G.ti = ti; const turn = G.turns[ti], nm = G.names, next = G.turns[ti + 1];
   $('game').dataset.p = turn.p;
   $('sideA').classList.toggle('on', turn.p === 0); $('sideB').classList.toggle('on', turn.p === 1);
-  $('who').textContent = nm[turn.p];
+  $('who').textContent = G.online ? (turn.p === G.online.role ? 'À toi' : nm[turn.p]) : nm[turn.p];
   $('angle').textContent = next ? 'Ensuite : ' + nm[next.p] : 'Dernier passage';
 }
 function frame() {
   raf = requestAnimationFrame(frame);
-  const beatPos = (ctx.currentTime - G.t0) / (60 / S.bpm);
+  const beatPos = (vnow() - G.t0) / (60 / G.cfg.bpm);
   if (beatPos >= G.total) return endClash();
   if (beatPos < 0) return;
   $('gProg').style.width = beatPos / G.total * 100 + '%';
@@ -570,51 +626,62 @@ function frame() {
   for (let i = Math.max(0, bar - 2); i < Math.min(G.rows.length, bar + 8); i++) G.rows[i].style.opacity = i < bar ? .25 : [1, .9, .75, .6][i - bar] || .5;
   $('track').style.transform = `translateY(${-Math.max(0, G.rows[bar].offsetTop - 96)}px)`;   // la mesure en cours reste en haut, les suivantes montent
 }
-async function newGame() {
-  if (G && G.loading) return;
-  stopPreview(); audio(); ctx.resume();
-  const B = beat(), bars = +S.bars; let buf = null;
-  G = { loading: true };
-  if (B.src) {
-    $('start').textContent = 'Chargement…';
-    try { buf = await loadBeat(B); } catch (e) { G = null; $('start').textContent = 'Instru indisponible, réessaie'; setTimeout(() => $('start').textContent = 'Play', 2500); return; }
-    $('start').textContent = 'Play';
-  }
-  G = { bars, total: PREP + bars * 4, log: [], last: -1, bar: -1, ti: -1, txt: '', step: 0 };
-  G.turns = Array.from({ length: bars / 4 }, (_, i) => ({ p: (starter + i) % 2, words: pickWords(), angle: S.angle === '1' ? draw(angDeck, ANGLES) : '' }));
-  G.log = G.turns;
-  const nm = names();
+/* Lance un clash. En local : réglages de l'écran, hasard libre, départ immédiat.
+   En ligne : réglages et graine du défi, départ à l'heure commune fixée par le serveur. */
+function runClash({ cfg, buf, seed = null, names: nm, first = 0, delay = .3, online = null }) {
+  C = cfg; setRandom(seed);
+  const B = BEATS.find(b => b.id === cfg.beat) || BEATS[0], bars = cfg.bars;
+  G = { cfg, B, bars, names: nm, online, total: PREP + bars * 4, last: -1, bar: -1, ti: -1, txt: '', step: 0 };
+  G.turns = Array.from({ length: bars / 4 }, (_, i) => ({ p: (first + i) % 2, words: pickWords(), angle: cfg.angle === '1' ? draw(angDeck, ANGLES) : '' }));
+  setRandom(null);
   $('gA').textContent = nm[0]; $('gB').textContent = nm[1]; $('roundLab').textContent = bars + ' mesures';
-  art($('gArt'), B); $('gT').textContent = B.n; $('gS').textContent = B.a + ' · ' + Math.round(S.bpm) + ' BPM';
-  $('pause').textContent = '⏸'; $('gProg').style.width = '0';
+  art($('gArt'), B); $('gT').textContent = B.n; $('gS').textContent = B.a + ' · ' + Math.round(cfg.bpm) + ' BPM';
+  $('pause').textContent = '⏸'; $('pause').hidden = !!online; $('gProg').style.width = '0';
   show('game'); buildGrid(); setTurn(0);
-  G.t0 = ctx.currentTime + .3;
-  if (buf) G.node = playBuffer(buf, G.t0, 0);
+  const now = ctx.currentTime; G.t0 = now + delay;
+  if (buf) { const at = Math.max(G.t0, now + .05); G.node = playBuffer(buf, at, at - G.t0); }
   clearInterval(timer); timer = setInterval(schedule, 40); schedule();
   cancelAnimationFrame(raf); raf = requestAnimationFrame(frame);
   try { navigator.wakeLock && navigator.wakeLock.request('screen').catch(() => {}); } catch (e) {}
 }
+let busy = false;
+async function newGame() {
+  if (busy) return; busy = true;
+  stopPreview(); audio(); ctx.resume();
+  const cfg = cfgOf(), B = beat(); let buf = null;
+  if (B.src) {
+    $('start').textContent = 'Chargement…';
+    try { buf = await loadBeat(B); } catch (e) { busy = false; $('start').textContent = 'Instru indisponible, réessaie'; setTimeout(() => sync(false), 2500); return; }
+  }
+  busy = false; sync(false);
+  runClash({ cfg, buf, names: names(), first: starter });
+}
 function stopLoop() { cancelAnimationFrame(raf); clearInterval(timer); if (G && G.node) G.node.stop(); }
 function endClash() {
   cancelAnimationFrame(raf); clearInterval(timer);
-  const nm = names(), n = G.bars / 8;
-  $('voteLab').textContent = G.bars + ' mesures · ' + beat().n;
+  const nm = G.names, n = G.bars / 8;
+  $('voteLab').textContent = G.bars + ' mesures · ' + G.B.n + (G.online ? ' · chacun vote de son côté' : '');
   $('vA').textContent = nm[0]; $('vB').textContent = nm[1]; $('vAw').textContent = $('vBw').textContent = n + (n > 1 ? ' passages' : ' passage') + ' de 4 mesures';
   setTimeout(() => show('vote'), 700);
 }
-$('vote').addEventListener('click', e => {
-  const b = e.target.closest('[data-w]'); if (!b) return;
-  const w = +b.dataset.w, nm = names(), t = $('endTitle'); G.score = w < 0 ? [1, 1] : w === 0 ? [1, 0] : [0, 1];
+function showEnd(w, note = '') {
+  const nm = G.names, t = $('endTitle'); G.score = w < 0 ? [1, 1] : w === 0 ? [1, 0] : [0, 1];
   t.textContent = '';
-  if (w < 0) { t.textContent = 'Égalité parfaite'; $('end').style.removeProperty('--wc'); }
+  if (w < 0) { t.textContent = note || 'Égalité parfaite'; $('end').style.removeProperty('--wc'); }
   else { const s = document.createElement('span'); s.textContent = nm[w]; t.append(s, ' remporte le clash'); $('end').style.setProperty('--wc', w === 0 ? 'var(--rouge)' : 'var(--bleu)'); }
-  $('endWords').replaceChildren(...G.log.flatMap(tn => tn.words).map(o => { const x = document.createElement('button'); x.type = 'button'; x.className = 'chip k' + o.k; x.textContent = o.w; x.onclick = () => openDico(o.w, 'end'); return x; }));
-  saveClash(); show('end');
+  $('endWords').replaceChildren(...G.turns.flatMap(tn => tn.words).map(o => { const x = document.createElement('button'); x.type = 'button'; x.className = 'chip k' + o.k; x.textContent = o.w; x.onclick = () => openDico(o.w, 'end'); return x; }));
+  $('again').textContent = G.online ? 'Retour au salon' : 'Revanche';
+  show('end');
+}
+$('vote').addEventListener('click', e => {
+  const b = e.target.closest('[data-w]'); if (!b || !G) return;
+  if (G.online) return sendVote(+b.dataset.w);
+  showEnd(+b.dataset.w); saveClash();
 });
-$('start').onclick = () => { starter = 0; newGame(); };
-$('again').onclick = () => { starter = 1 - starter; newGame(); };
+$('start').onclick = () => { if (rival) return invite(); starter = 0; newGame(); };
+$('again').onclick = () => { if (G && G.online) return openLobby(); starter = 1 - starter; newGame(); };
 $('back').onclick = () => show('home');
-$('quit').onclick = () => { stopLoop(); G = null; show('setup'); };
+$('quit').onclick = () => { const on = G && G.online; stopLoop(); G = null; on ? openLobby() : show('setup'); };
 $('pause').onclick = () => { if (ctx.state === 'running') { ctx.suspend(); $('pause').textContent = '▶'; $('state').textContent = G.txt = 'Pause'; } else { ctx.resume(); $('pause').textContent = '⏸'; } };
 
 /* ---------- Dictionnaire de rimes ---------- */
@@ -636,9 +703,12 @@ $('dq').oninput = e => searchDico(e.target.value);
 $('tDico').onclick = () => openDico('', 'home'); $('dicoBack').onclick = () => show(dicoFrom);
 
 /* ---------- Compte : inscription, connexion, stats ---------- */
+let clock = { off: 0, rtt: Infinity };     // écart entre l'horloge du serveur et celle de l'appareil
 async function call(path, body) {
+  const t0 = Date.now();
   const r = await fetch(path, body ? { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) } : {});
-  const d = await r.json().catch(() => ({}));
+  const d = await r.json().catch(() => ({})), t1 = Date.now();
+  if (d.now && t1 - t0 <= clock.rtt + 20) clock = { off: d.now - (t0 + t1) / 2, rtt: Math.min(clock.rtt, t1 - t0) };   // on garde la mesure du trajet le plus court
   if (!r.ok) throw new Error(d.error || 'Erreur réseau, réessaie.');
   return d;
 }
@@ -667,7 +737,7 @@ $('authForm').addEventListener('submit', async e => {
   catch (err) { $('authErr').textContent = err.message; }
   $('authGo').disabled = false;
 });
-$('btnLogout').onclick = async () => { try { await call('/api/logout', {}); } catch (e) {} setMe(null); };
+$('btnLogout').onclick = async () => { try { await call('/api/logout', {}); } catch (e) {} rival = ''; setMe(null); };
 const li = (cls, a, b, c) => { const l = document.createElement('li'); l.className = cls; const i = document.createElement('i'), s = document.createElement('span'), m = document.createElement('em'); i.textContent = a; s.textContent = b; m.textContent = c; l.append(i, s, m); return l; };
 async function openProfile() {
   show('profile'); $('profName').textContent = me ? me.pseudo : 'Invité';
@@ -684,8 +754,103 @@ async function openProfile() {
 }
 $('tProfile').onclick = openProfile;
 function saveClash() {
-  if (!me || !G || !G.score || G.saved) return; G.saved = true;
-  call('/api/clashes', { opponent: names()[1], myScore: G.score[0], theirScore: G.score[1] }).catch(() => { G.saved = false; });
+  if (!me || !G || !G.score || G.saved || G.online) return; G.saved = true;
+  call('/api/clashes', { opponent: G.names[1], myScore: G.score[0], theirScore: G.score[1] }).catch(() => { G.saved = false; });
+}
+
+/* ---------- En ligne : amis et défis ----------
+   Aucun canal temps réel : le salon interroge le serveur toutes les 4 s tant qu'il est ouvert et visible,
+   l'attente d'un départ toutes les secondes, et plus rien pendant le clash. */
+let lobbyT = 0, lobbyUntil = 0, lobbyErr = false, M = null, waitT = 0;
+const prow = (name, sub, btns) => { const r = document.createElement('div'), b = document.createElement('b'); r.className = 'prow'; b.textContent = name; if (sub) { const s = document.createElement('small'); s.textContent = sub; b.appendChild(s); } r.appendChild(b);
+  btns.forEach(([txt, fn, no]) => { const x = document.createElement('button'); x.type = 'button'; x.className = 'mini' + (no ? ' no' : ''); x.textContent = txt; x.onclick = fn; r.appendChild(x); }); return r; };
+const fill = (id, rows, empty) => { const el = $(id); el.replaceChildren(...rows); if (!rows.length && empty) { const p = document.createElement('p'); p.className = 'empty'; p.textContent = empty; el.appendChild(p); } };
+const cfgText = c => { const b = BEATS.find(x => x.id === c.beat) || BEATS[0], d = DIFFS.find(x => x.fill === c.fill && x.scheme === c.scheme); return c.bars + ' mesures · ' + b.n + ' · ' + (d ? d.n : c.scheme); };
+async function refreshLobby() {
+  let d; try { d = await call('/api/online'); } catch (e) { $('lobbyMsg').textContent = e.message; lobbyErr = true; return; }
+  if ($('online').hidden) return;
+  $('invBox').hidden = !d.invites.length; $('reqBox').hidden = !d.requests.length; $('sentBox').hidden = !d.sent.length;
+  fill('invites', d.invites.map(i => prow(i.host + ' te défie', cfgText(i.cfg), [['Accepter', () => accept(i.id)], ['Refuser', () => call('/api/matches/' + i.id + '/cancel', {}).then(refreshLobby, refreshLobby), 1]])));
+  fill('requests', d.requests.map(p => prow(p, '', [['Accepter', () => friend(p)], ['Refuser', () => unfriend(p), 1]])));
+  fill('friends', d.friends.map(p => prow(p, '', [['Défier', () => { rival = p; show('setup'); sync(); }], ['Retirer', () => unfriend(p), 1]])), 'Aucun ami pour l\'instant. Ajoute quelqu\'un par son pseudo : il verra ta demande ici, dans son salon.');
+  fill('sent', d.sent.map(p => prow(p, 'En attente de sa réponse', [['Annuler', () => unfriend(p), 1]])));
+  if (lobbyErr) { lobbyErr = false; $('lobbyMsg').textContent = ''; }
+}
+function stopLobby() { clearInterval(lobbyT); lobbyT = 0; }
+function openLobby() {
+  if (!me) return openAuth('login');
+  stopLobby(); rival = ''; $('lobbyMsg').textContent = ''; show('online'); lobbyUntil = Date.now() + 5 * 60000; refreshLobby();
+  lobbyT = setInterval(() => {
+    if (document.hidden) return;
+    if (Date.now() > lobbyUntil) { stopLobby(); $('lobbyMsg').textContent = 'Actualisation en pause. Touche l\'écran pour la relancer.'; return; }
+    refreshLobby();
+  }, 4000);
+}
+$('online').addEventListener('pointerdown', () => { if (!lobbyT && !$('online').hidden) openLobby(); else lobbyUntil = Date.now() + 5 * 60000; });
+$('goOnline').onclick = openLobby;
+async function friend(p) { try { const d = await call('/api/friends', { pseudo: p }); $('addMsg').textContent = d.state === 'ok' ? d.pseudo + ' est maintenant ton ami.' : 'Demande envoyée à ' + d.pseudo + '.'; } catch (e) { $('addMsg').textContent = e.message; } refreshLobby(); }
+async function unfriend(p) { try { await call('/api/friends/remove', { pseudo: p }); } catch (e) {} refreshLobby(); }
+$('addF').addEventListener('submit', e => { e.preventDefault(); const p = $('addP').value.trim(); if (p) { friend(p); $('addP').value = ''; } });
+
+function waiting(title, sub) { $('waitT').textContent = title; $('waitS').textContent = sub; $('waitC').textContent = ''; show('wait'); }
+function leaveMatch(msg) { clearInterval(waitT); waitT = 0; const m = M; M = null; if (m && m.id) call('/api/matches/' + m.id + '/cancel', {}).catch(() => {}); openLobby(); if (msg) $('lobbyMsg').textContent = msg; }
+$('waitX').onclick = () => leaveMatch('');
+async function invite() {             // hôte : crée le défi avec les réglages de l'écran de préparation
+  if (busy) return; busy = true; stopPreview(); audio(); ctx.resume();
+  const other = rival;
+  try { const d = await call('/api/matches', { friend: other, cfg: cfgOf() }); M = { id: d.id, other }; }
+  catch (e) { busy = false; $('start').textContent = e.message; setTimeout(() => sync(false), 2500); return; }
+  busy = false; waiting('En attente de ' + other, 'Ton défi apparaît dans son salon « Jouer en ligne ».'); follow();
+}
+async function accept(id) {            // invité
+  audio(); ctx.resume(); stopLobby();
+  try { const d = await call('/api/matches/' + id + '/accept', {}); M = { id, other: d.host }; waiting('Défi accepté', 'Chargement de l\'instru…'); follow(d); }
+  catch (e) { openLobby(); $('lobbyMsg').textContent = e.message; }
+}
+function follow(first) {              // suit le défi jusqu'au départ commun
+  const m = M, t0 = Date.now(); let loading = false, sent = false, launched = false;
+  const step = async d => {
+    if (M !== m || launched) return;
+    if (d.status === 'cancelled') return leaveMatch(m.other + ' a décliné ou annulé le défi.');
+    if (d.status === 'accepted' && !loading) {
+      loading = true; if (d.role === 0) waiting(m.other + ' a accepté', 'Chargement de l\'instru…');
+      const B = BEATS.find(b => b.id === d.cfg.beat) || BEATS[0];
+      try { m.buf = B.src ? await loadBeat(B) : null; } catch (e) { return leaveMatch('Instru indisponible, réessaie.'); }
+      if (M !== m) return;
+      try { sent = true; step(await call('/api/matches/' + m.id + '/ready', {})); } catch (e) { sent = false; }
+      return;
+    }
+    if (d.start_at && loading && sent) {
+      launched = true; clearInterval(waitT); waitT = 0;
+      $('waitT').textContent = 'C\'est parti'; $('waitS').textContent = d.host + ' contre ' + d.guest;
+      const left = () => (d.start_at - (Date.now() + clock.off)) / 1000;
+      const tick = setInterval(() => { $('waitC').textContent = Math.max(0, Math.ceil(left())); }, 100);
+      setTimeout(() => {                      // on passe sur la grille un peu avant le départ ; l'instant exact est porté par l'horloge audio
+        clearInterval(tick); if (M !== m) return; ctx.resume();
+        runClash({ cfg: d.cfg, buf: m.buf, seed: d.seed, names: [d.host, d.guest], delay: left(), online: { id: m.id, role: d.role } });
+      }, Math.max(0, left() * 1000 - 1200));
+    }
+  };
+  if (first) step(first);
+  clearInterval(waitT);
+  waitT = setInterval(async () => {
+    if (M !== m) return clearInterval(waitT);
+    if (Date.now() - t0 > 150000) return leaveMatch('Pas de réponse : défi annulé.');
+    try { step(await call('/api/matches/' + m.id)); } catch (e) {}
+  }, 1000);
+}
+async function sendVote(w) {          // chacun vote sur son appareil ; le serveur tranche et enregistre pour les deux comptes
+  const g = G, id = g.online.id, t0 = Date.now();
+  waiting('Vote envoyé', 'En attente du vote de ' + M.other + '…'); $('waitX').hidden = true;
+  const done = d => { clearInterval(waitT); waitT = 0; $('waitX').hidden = false; if (G !== g) return; M = null; showEnd(d.result, d.agreed ? '' : 'Votes différents : égalité'); };
+  let d; try { d = await call('/api/matches/' + id + '/vote', { w }); } catch (e) { d = {}; }
+  if (d.result != null) return done(d);
+  clearInterval(waitT);
+  waitT = setInterval(async () => {
+    if (G !== g) return clearInterval(waitT);
+    if (Date.now() - t0 > 90000) { clearInterval(waitT); $('waitX').hidden = false; M = null; openLobby(); $('lobbyMsg').textContent = 'Vote de ton adversaire non reçu : clash non enregistré.'; return; }
+    try { const r = await call('/api/matches/' + id); if (r.result != null) done(r); } catch (e) {}
+  }, 2000);
 }
 sync();
 call('/api/me').then(d => setMe(d.user)).catch(() => {});

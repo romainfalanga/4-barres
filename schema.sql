@@ -21,3 +21,28 @@ CREATE TABLE IF NOT EXISTS clashes (
   created_at INTEGER NOT NULL
 );
 CREATE INDEX IF NOT EXISTS clashes_user ON clashes(user_id, created_at DESC);
+
+CREATE TABLE IF NOT EXISTS friends (
+  user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  friend_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  status TEXT NOT NULL CHECK (status IN ('pending','ok')),
+  created_at INTEGER NOT NULL,
+  PRIMARY KEY (user_id, friend_id)
+);
+CREATE INDEX IF NOT EXISTS friends_target ON friends(friend_id, status);
+CREATE TABLE IF NOT EXISTS matches (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  host_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  guest_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  cfg TEXT NOT NULL,
+  seed INTEGER NOT NULL,
+  status TEXT NOT NULL CHECK (status IN ('invited','accepted','cancelled','done')),
+  host_ready INTEGER NOT NULL DEFAULT 0,
+  guest_ready INTEGER NOT NULL DEFAULT 0,
+  start_at INTEGER,
+  host_vote INTEGER,
+  guest_vote INTEGER,
+  created_at INTEGER NOT NULL
+);
+CREATE INDEX IF NOT EXISTS matches_guest ON matches(guest_id, status, created_at);
+CREATE INDEX IF NOT EXISTS matches_host ON matches(host_id, status);
