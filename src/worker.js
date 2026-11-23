@@ -36,7 +36,12 @@ async function openSession(env, user) {
 async function stats(env, id) {
   const s = await env.DB.prepare("SELECT COUNT(*) AS clashs, COALESCE(SUM(result='V'),0) AS victoires, COALESCE(SUM(result='D'),0) AS defaites, COALESCE(SUM(result='N'),0) AS nuls FROM clashes WHERE user_id = ?").bind(id).first();
   const h = await env.DB.prepare('SELECT opponent, my_score, their_score, result, created_at FROM clashes WHERE user_id = ? ORDER BY created_at DESC, id DESC LIMIT 20').bind(id).all();
-  return { stats: s, history: h.results };
+  // Série : jours consécutifs avec au moins un clash (en cours si le dernier date d'aujourd'hui ou d'hier).
+  const d = await env.DB.prepare("SELECT DISTINCT CAST(created_at / 86400 AS INTEGER) AS j FROM clashes WHERE user_id = ? ORDER BY j DESC LIMIT 400").bind(id).all();
+  const days = d.results.map(r => r.j), today = Math.floor(now() / DAY);
+  let serie = 0, record = 0, run = 0;
+  days.forEach((j, i) => { run = i && days[i - 1] - j === 1 ? run + 1 : 1; record = Math.max(record, run); if (run === i + 1 && today - days[0] <= 1) serie = run; });
+  return { stats: { ...s, serie, record }, history: h.results };
 }
 
 async function api(req, env, path) {
